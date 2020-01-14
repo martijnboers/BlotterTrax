@@ -1,2 +1,3 @@
 env
+conf/reddit-credentials.ini
 __pycache__
