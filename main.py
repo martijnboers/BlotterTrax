@@ -1,5 +1,4 @@
 import re
-import time
 from urllib import parse
 from urllib.parse import urlparse
 
@@ -11,10 +10,9 @@ from youtube import Youtube
 
 class BlotterTrax:
     reddit: Reddit = None
-    useragent = 'Tbd'
-    config = Config()
-    youtube = Youtube()
-    youtubeUrls = ['youtube.com', 'youtube.be', 'www.youtube.com']
+    useragent: str = 'Tbd'
+    config: Config = Config()
+    youtube: Youtube = Youtube()
 
     def __init__(self):
         try:
@@ -25,30 +23,38 @@ class BlotterTrax:
             exit('Check if the configuration is set right')
 
     def _run(self):
-        subreddit = self.reddit.subreddit('listentothis')
-
-        for submission in subreddit.stream.submissions():
+        for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
             url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
 
             if url is None:
                 continue
 
             parsedUrl = urlparse(url)
+            youtubeLimit = self.youtube.exceedsThreshold(parsedUrl)
 
-            if parsedUrl.netloc not in self.youtubeUrls:
+            if youtubeLimit['exceeds']:
+                self._archieve(submission, youtubeLimit['threshold'], youtubeLimit['count'])
                 continue
 
-            query = parse.parse_qs(parse.urlsplit(url).query)
+    def _archieve(self, submission, threshold, count):
+        reply = '''
+All apologies /u/{} but your post has been automatically removed because the artist has too many youtube plays. The maximum is {}, this link has {}.
+If you think this is in error, please [contact the mods](https://www.reddit.com/message/compose?to=/r/listentothis&subject=Post+removed+in+error.&message=https://redd.it/cdlzgi). 
 
-            viewCount = self.youtube.video(query['v'][0])
+If you're new to the subreddit, please read the full list of removal reasons.
 
-            if viewCount > 50000:
-                print('TODO: archive reddit post ')
+_Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og)|[_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
+        '''.format(submission.author.name, threshold, count)
+
+        comment = submission.reply(reply)
+        comment.mod.distinguish("yes", sticky=True)
+
+        submission.mod.remove()
+
+        # TODO: start saving processed submissions
 
     def deamon(self):
-        while True:
-            self._run()
-            time.sleep(0.5)
+        self._run()
 
 
 if __name__ == '__main__':

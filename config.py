@@ -3,11 +3,12 @@ import os
 
 
 class Config:
-    CLIENT_ID = ''
-    CLIENT_SECRET = ''
-    PASSWORD = ''
-    USER_NAME = ''
-    YT_KEY = ''
+    CLIENT_ID: str = ''
+    CLIENT_SECRET: str = ''
+    PASSWORD: str = ''
+    USER_NAME: str = ''
+    YT_KEY: str = ''
+    SUBREDDIT: str = ''
 
     def __init__(self):
         config = configparser.ConfigParser()
@@ -18,6 +19,7 @@ class Config:
             self.CLIENT_SECRET = config['REDDIT']['CLIENT_SECRET']
             self.PASSWORD = config['REDDIT']['PASSWORD']
             self.USER_NAME = config['REDDIT']['USER_NAME']
+            self.SUBREDDIT = config['REDDIT']['SUBREDDIT']
 
             self.YT_KEY = config['YOUTUBE']['KEY']
 
