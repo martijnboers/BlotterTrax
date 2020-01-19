@@ -5,14 +5,16 @@ from urllib.parse import urlparse
 from praw import Reddit
 
 from config import Config
+from database import Database
 from youtube import Youtube
 
 
 class BlotterTrax:
     reddit: Reddit = None
-    useragent: str = 'Tbd'
+    useragent: str = 'BlotterTrax /r/listentothis submission bot by /u/plebianlinux'
     config: Config = Config()
     youtube: Youtube = Youtube()
+    database: Database = Database()
 
     def __init__(self):
         try:
@@ -24,6 +26,9 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+            if self.database.known_submission(submission) is True:
+                continue
+
             url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
 
             if url is None:
@@ -33,25 +38,25 @@ class BlotterTrax:
             youtubeLimit = self.youtube.exceedsThreshold(parsedUrl)
 
             if youtubeLimit['exceeds']:
-                self._archieve(submission, youtubeLimit['threshold'], youtubeLimit['count'])
+                self._archieve(submission, 'youtube', youtubeLimit['threshold'], youtubeLimit['count'])
                 continue
 
-    def _archieve(self, submission, threshold, count):
+    def _archieve(self, submission, service, threshold, count):
         reply = '''
-All apologies /u/{} but your post has been automatically removed because the artist has too many youtube plays. The maximum is {}, this link has {}.
-If you think this is in error, please [contact the mods](https://www.reddit.com/message/compose?to=/r/listentothis&subject=Post+removed+in+error.&message=https://redd.it/cdlzgi). 
+All apologies /u/{} but your post has been automatically removed because the artist has too many {} plays. The maximum is {:,}, this link has {:,}.
+If you think this is in error, please [contact the mods](https://www.reddit.com/message/compose?to=/r/listentothis&subject=Post+removed+in+error.&message=https://redd.it/{}). 
 
 If you're new to the subreddit, please read the full list of removal reasons.
 
 _Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og)|[_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
-        '''.format(submission.author.name, threshold, count)
+        '''.format(submission.author.name, service, threshold, count, submission.id)
 
         comment = submission.reply(reply)
         comment.mod.distinguish("yes", sticky=True)
 
-        submission.mod.remove()
+        # submission.mod.remove()
 
-        # TODO: start saving processed submissions
+        self.database.save_submission(submission)
 
     def deamon(self):
         self._run()
