@@ -13,7 +13,7 @@ scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
 class Youtube:
     config: Config = Config()
     youtubeClient = None
-    threshold = 500000
+    threshold = 500_000
     youtubeUrls: List[str] = ['youtube.com', 'youtube.be', 'www.youtube.com']
 
     def __init__(self):
@@ -27,9 +27,9 @@ class Youtube:
         self.youtubeClient = googleapiclient.discovery.build(
             api_service_name, api_version, developerKey=self.config.YT_KEY)
 
-    def exceedsThreshold(self, parsedurl):
+    def exceeds_threshold(self, parsedurl):
         if parsedurl.netloc not in self.youtubeUrls:
-            return
+            return {'exceeds': False}
 
         query = parse.parse_qs(parse.urlsplit(parsedurl.geturl()).query)
 

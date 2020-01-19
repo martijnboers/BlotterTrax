@@ -8,6 +8,10 @@ class Config:
     PASSWORD: str = ''
     USER_NAME: str = ''
     YT_KEY: str = ''
+    LASTFM_KEY: str = ''
+    LASTFM_SECRET: str = ''
+    LASTFM_USERNAME: str = ''
+    LASTFM_PASSWORD: str = ''
     SUBREDDIT: str = ''
 
     def __init__(self):
@@ -22,6 +26,11 @@ class Config:
             self.SUBREDDIT = config['REDDIT']['SUBREDDIT']
 
             self.YT_KEY = config['YOUTUBE']['KEY']
+
+            self.LASTFM_KEY = config['LASTFM']['KEY']
+            self.LASTFM_SECRET = config['LASTFM']['SECRET']
+            self.LASTFM_USERNAME = config['LASTFM']['USERNAME']
+            self.LASTFM_PASSWORD = config['LASTFM']['PASSWORD']
 
         except Exception:
             exit("Please make sure reddit-credentials.ini is set")
