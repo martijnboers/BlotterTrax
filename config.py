@@ -18,7 +18,7 @@ class Config:
         config = configparser.ConfigParser()
 
         try:
-            config.read('{}/conf/reddit-credentials.ini'.format(os.path.dirname(os.path.realpath(__file__))))
+            config.read('{}/conf/config.ini'.format(os.path.dirname(os.path.realpath(__file__))))
             self.CLIENT_ID = config['REDDIT']['CLIENT_ID']
             self.CLIENT_SECRET = config['REDDIT']['CLIENT_SECRET']
             self.PASSWORD = config['REDDIT']['PASSWORD']

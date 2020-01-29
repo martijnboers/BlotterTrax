@@ -1,4 +1,4 @@
 env
-conf/reddit-credentials.ini
+conf/config.ini
 __pycache__
 submissions.db
