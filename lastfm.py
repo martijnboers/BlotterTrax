@@ -1,3 +1,5 @@
+import re
+
 import pylast
 
 from config import Config
@@ -31,7 +33,7 @@ class LastFM:
             return {'exceeds': True, 'count': listeners,
                     'threshold': self.threshold_listeners, 'service': 'Last.fm listeners'}
 
-        if scrobbles > self.threshold_listeners:
+        if scrobbles > self.threshold_scrobbles:
             return {'exceeds': True, 'count': scrobbles,
                     'threshold': self.threshold_scrobbles, 'service': 'Last.fm artist scrobles'}
 
@@ -46,8 +48,13 @@ class LastFM:
         except pylast.WSError:
             return self._cant_find_artist_reply()
 
-        description = artist.get_bio_summary()
-        description.replace('<a href="https://www.last.fm/music/{}">Read more on Last.fm</a>'.format(artist_name), '')
+        description = str(artist.get_bio_summary())
+
+        # Strip out last.fm link from description
+        description = re.sub(r'<a href="https://www\.last\.fm/.*">Read more on Last\.fm</a>', '', description)
+
+        # Fix formatting for linebreaks
+        description = description.replace("\n", "\n>")
 
         if description == '':
             return self._cant_find_artist_reply()
@@ -56,9 +63,7 @@ class LastFM:
         top_tags = artist.get_top_tags(limit=5)
         last_fm_url = artist.get_url()
 
-        tag_str = ''
-        for tag in top_tags:
-            tag_str += tag.item.get_name() + ' '
+        tag_string = ', '.join(map(lambda t: t.item.get_name(), top_tags))
 
         comment = '''
 **{}**
@@ -68,7 +73,7 @@ class LastFM:
 [last.fm]({}): {:,} listeners, {:,} plays
 
 tags: {}
-        '''.format(artist_name, description, last_fm_url, listeners, plays, tag_str)
+        '''.format(artist_name, description, last_fm_url, listeners, plays, tag_string)
 
         return comment
 

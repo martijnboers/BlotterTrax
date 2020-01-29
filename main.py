@@ -1,6 +1,5 @@
 import re
 import time
-from urllib import parse
 from urllib.parse import urlparse
 
 from praw import Reddit
@@ -34,7 +33,7 @@ class BlotterTrax:
                 continue
 
             if submission.is_self is True:
-                if '[Discussion]' not in submission.title:
+                if '[discussion]' not in str(submission.title).lower():
                     self._archive_text_post_without_discussion_tag(submission)
                 else:
                     self.database.save_submission(submission)
@@ -99,14 +98,14 @@ _Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og
     def _extract_artist_post_title(post_title):
         return post_title.split(' -')[0]
 
-    def deamon(self):
+    def daemon(self):
         try:
             self._run()
         except Exception as exception:
             print(str(exception))
             time.sleep(self.crash_timeout)
-            self._run()
+            self.daemon()
 
 
 if __name__ == '__main__':
-    BlotterTrax().deamon()
+    BlotterTrax().daemon()
