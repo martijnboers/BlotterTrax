@@ -52,7 +52,7 @@ class BlotterTrax:
             parsed_url = urlparse(url)
             youtube_service = self.youtube.get_service_result(parsed_url)
 
-            if youtube_service.exceeds_threshold:
+            if youtube_service.exceeds_threshold is True:
                 self._archive_submission_exceeding_threshold(submission, youtube_service.service_name,
                                                              youtube_service.threshold, youtube_service.listeners_count)
                 continue
@@ -69,7 +69,7 @@ class BlotterTrax:
             except pylast.WSError:
                 continue
 
-            if last_fm_service.exceeds_threshold:
+            if last_fm_service.exceeds_threshold is True:
                 self._archive_submission_exceeding_threshold(submission, last_fm_service.service_name,
                                                              last_fm_service.threshold, last_fm_service.listeners_count)
                 continue
