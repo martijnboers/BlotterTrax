@@ -2,6 +2,7 @@ import re
 import time
 from urllib.parse import urlparse
 
+import pylast
 from praw import Reddit
 
 from config import Config
@@ -42,19 +43,23 @@ class BlotterTrax:
             url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
 
             parsed_url = urlparse(url)
-            youtube_limit = self.youtube.exceeds_threshold(parsed_url)
+            youtube_service = self.youtube.get_service_result(parsed_url)
 
-            if youtube_limit['exceeds']:
-                self._archive_submission_exceeding_threshold(submission, 'YouTube plays', youtube_limit['threshold'],
-                                                             youtube_limit['count'])
+            if youtube_service.exceeds_threshold:
+                self._archive_submission_exceeding_threshold(submission, youtube_service.service_name,
+                                                             youtube_service.threshold, youtube_service.listeners_count)
                 continue
 
             artist_name = self._extract_artist_post_title(submission.title)
-            last_fm = self.last_fm.exceeds_threshold(artist_name)
 
-            if last_fm['exceeds']:
-                self._archive_submission_exceeding_threshold(submission, last_fm['service'], last_fm['threshold'],
-                                                             last_fm['count'])
+            try:
+                last_fm_service = self.last_fm.get_service_result(artist_name)
+            except pylast.WSError:
+                continue
+
+            if last_fm_service.exceeds_threshold:
+                self._archive_submission_exceeding_threshold(submission, last_fm_service.service_name,
+                                                             last_fm_service.threshold, last_fm_service.listeners_count)
                 continue
 
             # Yeey this post probably isn't breaking the rules 🌈

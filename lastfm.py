@@ -3,6 +3,7 @@ import re
 import pylast
 
 from config import Config
+from serviceresult import ServiceResult
 
 
 class LastFM:
@@ -17,31 +18,28 @@ class LastFM:
                                             username=self.config.LASTFM_USERNAME,
                                             password_hash=pylast.md5(self.config.LASTFM_PASSWORD))
 
-    def exceeds_threshold(self, artist_name):
+    def get_service_result(self, artist_name: str) -> ServiceResult:
+        """
+        Gets the last fm statistics for the artist name and verifies if it exceeds the given thresholds
+        """
         artist = self.network.get_artist(artist_name)
-        listeners = None
-        scrobbles = None
 
-        try:
-            listeners = artist.get_listener_count()
-            scrobbles = artist.get_playcount()
-        except pylast.WSError:
-            # Can't find artist
-            return {'exceeds': False}
+        listeners = artist.get_listener_count()
+        scrobbles = artist.get_playcount()
 
         if listeners > self.threshold_listeners:
-            return {'exceeds': True, 'count': listeners,
-                    'threshold': self.threshold_listeners, 'service': 'Last.fm listeners'}
+            return ServiceResult(True, listeners, self.threshold_listeners, 'Last.fm listeners')
 
         if scrobbles > self.threshold_scrobbles:
-            return {'exceeds': True, 'count': scrobbles,
-                    'threshold': self.threshold_scrobbles, 'service': 'Last.fm artist scrobles'}
+            return ServiceResult(True, scrobbles, self.threshold_scrobbles, 'Last.fm artist scrobles')
 
-        return {'exceeds': False}
+        return ServiceResult(False, scrobbles, 0, '')
 
-    def get_artist_reply(self, artist_name):
+    def get_artist_reply(self, artist_name) -> str:
+        """
+        Get the formatted artist reply with appended last.fm data
+        """
         artist = self.network.get_artist(artist_name)
-        listeners = None
 
         try:
             listeners = artist.get_listener_count()
