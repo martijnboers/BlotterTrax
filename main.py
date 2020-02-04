@@ -15,17 +15,23 @@ from youtube import Youtube
 class BlotterTrax:
     reddit: Reddit = None
     useragent: str = 'BlotterTrax /r/listentothis submission bot by /u/plebianlinux'
-    config: Config = Config()
-    youtube: Youtube = Youtube()
-    last_fm: LastFM = LastFM()
-    database: Database = Database()
+    config: Config = None
+    youtube: Youtube = None
+    last_fm: LastFM = None
+    database: Database = None
     crash_timeout: int = 10
 
     def __init__(self):
         try:
+            self.config = Config()
+            self.youtube = Youtube()
+            self.last_fm = LastFM()
+            self.database = Database()
+
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
                                  username=self.config.USER_NAME)
+
         except KeyError:
             exit('Check if the configuration is set right')
 
