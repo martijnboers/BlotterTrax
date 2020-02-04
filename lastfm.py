@@ -14,7 +14,6 @@ class LastFM:
     threshold_listeners = 250_000
 
     def __init__(self):
-
         self.network = pylast.LastFMNetwork(api_key=self.config.LASTFM_KEY, api_secret=self.config.LASTFM_SECRET,
                                             username=self.config.LASTFM_USERNAME,
                                             password_hash=pylast.md5(self.config.LASTFM_PASSWORD))
