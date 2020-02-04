@@ -2,6 +2,7 @@ import re
 
 import pylast
 
+import templates
 from config import Config
 from serviceresult import ServiceResult
 
@@ -44,7 +45,7 @@ class LastFM:
         try:
             listeners = artist.get_listener_count()
         except pylast.WSError:
-            return self._cant_find_artist_reply()
+            return templates.cant_find_artist
 
         description = str(artist.get_bio_summary())
 
@@ -55,7 +56,7 @@ class LastFM:
         description = description.replace("\n", "\n>")
 
         if description == '':
-            return self._cant_find_artist_reply()
+            return templates.cant_find_artist
 
         plays = artist.get_playcount()
         top_tags = artist.get_top_tags(limit=5)
@@ -63,24 +64,6 @@ class LastFM:
 
         tag_string = ', '.join(map(lambda t: t.item.get_name(), top_tags))
 
-        comment = '''
-**{}**
-
-> {}
-
-[last.fm]({}): {:,} listeners, {:,} plays
-
-tags: {}
-        '''.format(artist_name, description, last_fm_url, listeners, plays, tag_string)
-
-        return comment
-
-    @staticmethod
-    def _cant_find_artist_reply():
-        return '''
-Can't find the artist on last.fm or artists doesn't have a description.
-
-Make sure you spelled it right or if you can; add this artist to last.fm
-
-_Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og)|[_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
-            '''
+        return templates.reply_with_last_fm_info.format(
+            artist_name, description, last_fm_url, listeners, plays, tag_string
+        )

@@ -8,6 +8,7 @@ from praw import Reddit
 from config import Config
 from database import Database
 from lastfm import LastFM
+import templates
 from youtube import Youtube
 
 
@@ -68,14 +69,9 @@ class BlotterTrax:
             self.database.save_submission(submission)
 
     def _archive_submission_exceeding_threshold(self, submission, service, threshold, count):
-        reply = '''
-All apologies /u/{} but your post has been automatically removed because the artist has too many {}. The maximum is {:,}, this link has {:,}.
-If you think this is in error, please [contact the mods](https://www.reddit.com/message/compose?to=/r/listentothis&subject=Post+removed+in+error.&message=https://redd.it/{}). 
-
-If you're new to the subreddit, please read the full list of removal reasons.
-
-_Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og)|[_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
-        '''.format(submission.author.name, service, threshold, count, submission.id)
+        reply = templates.submission_exceeding_threshold.format(
+            submission.author.name, service, threshold, count, submission.id
+        )
 
         comment = submission.reply(reply)
         comment.mod.distinguish("yes", sticky=True)
@@ -84,13 +80,7 @@ _Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og
         self.database.save_submission(submission)
 
     def _archive_text_post_without_discussion_tag(self, submission):
-        reply = '''
-All apologies /u/{} but your post has been automatically removed because it is a text post without the [Discussion] tag 
-
-If you're new to the subreddit, please read the full list of removal reasons.
-
-_Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og)|[_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
-                '''.format(submission.author.name, submission.id)
+        reply = templates.submission_missing_discussion_tag.format(submission.author.name, submission.id)
 
         comment = submission.reply(reply)
         comment.mod.distinguish("yes", sticky=True)
