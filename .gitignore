@@ -1,4 +1,4 @@
 env
 conf/config.ini
 __pycache__
-submissions.db
+database/submissions.db
