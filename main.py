@@ -39,12 +39,12 @@ class BlotterTrax:
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
             if self.database.known_submission(submission) is True:
                 continue
+            else:
+                self.database.save_submission(submission)
 
             if submission.is_self is True:
                 if '[discussion]' not in str(submission.title).lower():
-                    self._archive_text_post_without_discussion_tag(submission)
-                else:
-                    self.database.save_submission(submission)
+                    self._remove_text_post_without_discussion_tag(submission)
                 continue
 
             url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
@@ -53,50 +53,47 @@ class BlotterTrax:
             youtube_service = self.youtube.get_service_result(parsed_url)
 
             if youtube_service.exceeds_threshold is True:
-                self._archive_submission_exceeding_threshold(submission, youtube_service.service_name,
-                                                             youtube_service.threshold, youtube_service.listeners_count)
-                continue
-
-            try:
-                artist_name = self._get_artist_name_from_submission_title(submission.title)
-            except LookupError:
-                self._reply_with_sticky_post(submission, templates.cant_find_artist)
-
+                self._perform_exceeds_threshold_mod_action(submission, youtube_service)
                 continue
 
             try:
                 last_fm_service = self.last_fm.get_service_result(artist_name)
+                if last_fm_service.exceeds_threshold is True:
+                    self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
+                    continue
             except pylast.WSError:
-                continue
-
-            if last_fm_service.exceeds_threshold is True:
-                self._archive_submission_exceeding_threshold(submission, last_fm_service.service_name,
-                                                             last_fm_service.threshold, last_fm_service.listeners_count)
-                continue
+                # Go ahead and continue.  Don't want to fail completely just because on service failed.
 
             # Yeey this post probably isn't breaking the rules 🌈
+            try:
+                artist_name = self._get_artist_name_from_submission_title(submission.title)
+            except LookupError:
+                self._reply_with_sticky_post(submission, templates.cant_find_artist)
+                continue
+
             self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
 
-    def _archive_submission_exceeding_threshold(self, submission, service, threshold, count):
+    def _perform_exceeds_threshold_mod_action(self, submission, service):
+        if self.config.REMOVE_SUBMISSIONS is True:
+            self._remove_submission_exceeding_threshold(submission, service)
+        else
+            submission.report("BlotterTrax: {} exceeds {:,}.  Actual: {:,}").format(service.service_name, service.threshold, service.count)
+
+    def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
-            submission.author.name, service, threshold, count, submission.id
+            submission.author.name, service.service_name, service.threshold, service.count, submission.id
         )
+        submission.mod.remove()
+        self._reply_with_sticky_post(submission, reply)
 
-        self._reply_with_sticky_post(submission, reply, True)
-
-    def _archive_text_post_without_discussion_tag(self, submission):
+    def _remove_text_post_without_discussion_tag(self, submission):
         reply = templates.submission_missing_discussion_tag.format(submission.author.name, submission.id)
+        submission.mod.remove()
+        self._reply_with_sticky_post(submission, reply)
 
-        self._reply_with_sticky_post(submission, reply, True)
-
-    def _reply_with_sticky_post(self, submission, reply_text, remove=False):
+    def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
-
-        if remove is True:
-            submission.mod.remove()
-
-        self.database.save_submission(submission)
 
     @staticmethod
     def _get_artist_name_from_submission_title(post_title):
