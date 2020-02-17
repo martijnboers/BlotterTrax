@@ -50,6 +50,9 @@ class BlotterTrax:
             url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
 
             parsed_url = urlparse(url)
+
+            artist_name = self._get_artist_name_from_submission_title(submission.title)
+
             youtube_service = self.youtube.get_service_result(parsed_url)
 
             if youtube_service.exceeds_threshold is True:
@@ -67,7 +70,6 @@ class BlotterTrax:
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                artist_name = self._get_artist_name_from_submission_title(submission.title)
                 self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
             except LookupError:
                 self._reply_with_sticky_post(submission, templates.cant_find_artist)
