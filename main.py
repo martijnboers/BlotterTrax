@@ -68,11 +68,10 @@ class BlotterTrax:
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 artist_name = self._get_artist_name_from_submission_title(submission.title)
+                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
             except LookupError:
                 self._reply_with_sticky_post(submission, templates.cant_find_artist)
                 continue
-
-            self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
 
     def _perform_exceeds_threshold_mod_action(self, submission, service):
         if self.config.REMOVE_SUBMISSIONS is True:
