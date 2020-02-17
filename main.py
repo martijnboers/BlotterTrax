@@ -63,6 +63,7 @@ class BlotterTrax:
                     continue
             except pylast.WSError:
                 # Go ahead and continue.  Don't want to fail completely just because on service failed.
+                pass
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
@@ -76,7 +77,7 @@ class BlotterTrax:
     def _perform_exceeds_threshold_mod_action(self, submission, service):
         if self.config.REMOVE_SUBMISSIONS is True:
             self._remove_submission_exceeding_threshold(submission, service)
-        else
+        else:
             submission.report("BlotterTrax: {} exceeds {:,}.  Actual: {:,}").format(service.service_name, service.threshold, service.count)
 
     def _remove_submission_exceeding_threshold(self, submission, service):
