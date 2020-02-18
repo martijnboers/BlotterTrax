@@ -41,10 +41,7 @@ class LastFM:
         """
         artist = self.network.get_artist(artist_name)
 
-        try:
-            listeners = artist.get_listener_count()
-        except pylast.WSError:
-            return templates.cant_find_artist
+        listeners = artist.get_listener_count()
 
         description = str(artist.get_bio_summary())
 
@@ -55,7 +52,7 @@ class LastFM:
         description = description.replace("\n", "\n>")
 
         if description == '':
-            return templates.cant_find_artist
+            raise LookupError
 
         plays = artist.get_playcount()
         top_tags = artist.get_top_tags(limit=5)
