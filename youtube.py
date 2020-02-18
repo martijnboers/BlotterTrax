@@ -2,6 +2,9 @@ import os
 from typing import List
 from urllib import parse
 
+import requests
+from urllib.parse import urlparse
+
 import googleapiclient.discovery
 import googleapiclient.errors
 
@@ -15,7 +18,7 @@ class Youtube:
     config: Config = Config()
     youtubeClient = None
     threshold = 500_000
-    youtubeUrls: List[str] = ['youtube.com', 'youtube.be', 'www.youtube.com']
+    youtubeUrls: List[str] = ['youtube.com', 'youtube.be', 'www.youtube.com', 'youtu.be']
 
     def __init__(self):
         api_service_name = "youtube"
@@ -28,10 +31,17 @@ class Youtube:
         """
         Get the v query from the url and use it to query for Youtube review statistics
         """
-        if parsed_url.netloc not in self.youtubeUrls:
+
+        # Follow URL to the end location in case of URL shorteners
+        session = requests.Session()  # so connections are recycled
+        resp = session.head(parsed_url.geturl(), allow_redirects=True)
+
+        final_url = urlparse(resp.url)
+
+        if final_url.netloc not in self.youtubeUrls:
             return ServiceResult(False, 0, 0, '')
 
-        query = parse.parse_qs(parse.urlsplit(parsed_url.geturl()).query)
+        query = parse.parse_qs(parse.urlsplit(final_url.geturl()).query)
 
         request = self.youtubeClient.videos().list(
             part="statistics",
