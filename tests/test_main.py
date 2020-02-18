@@ -15,6 +15,7 @@ class TestBlotterTrax(TestCase):
             ('007Bonez feat Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez'),
             ('007Bonez feat. Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez'),
             ('Teen Suicide — Haunt Me x3 [indie rock] (2014)', 'Teen Suicide'),
+            ("upsammy - Another Place - Nous'klaer 011", 'upsammy'),
         ]
         for submission_title, artist in submissions:
             title = BlotterTrax._get_artist_name_from_submission_title(submission_title)
