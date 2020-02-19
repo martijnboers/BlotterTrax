@@ -1,5 +1,7 @@
 import re
+import sys
 import time
+import traceback
 from urllib.parse import urlparse
 
 import pylast
@@ -42,60 +44,54 @@ class BlotterTrax:
 
             if submission.is_self is True:
                 self.database.save_submission(submission)
+                # We currently don't do anything further with self posts.  Move to the next post.
+                continue
 
-            url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
+            artist_name = self._get_artist_name_from_submission_title(submission.title)
 
-            parsed_url = urlparse(url)
-            youtube_service = self.youtube.get_service_result(parsed_url)
-
+            # Check Youtube.
+            youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
-                self._archive_submission_exceeding_threshold(submission, youtube_service.service_name,
-                                                             youtube_service.threshold, youtube_service.listeners_count)
-                continue
-
-            try:
-                artist_name = self._get_artist_name_from_submission_title(submission.title)
-            except LookupError:
+                self._perform_exceeds_threshold_mod_action(submission, youtube_service)
                 self.database.save_submission(submission)
-
                 continue
 
+            # Check Last.FM
             try:
                 last_fm_service = self.last_fm.get_service_result(artist_name)
+                if last_fm_service.exceeds_threshold is True:
+                    self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
+                    self.database.save_submission(submission)
+                    continue
             except pylast.WSError:
-                self.database.save_submission(submission)
-
-                continue
-
-            if last_fm_service.exceeds_threshold is True:
-                self._archive_submission_exceeding_threshold(submission, last_fm_service.service_name,
-                                                             last_fm_service.threshold, last_fm_service.listeners_count)
-                continue
+                # Go ahead and continue execution.  Don't want to fail completely just because one service failed.
+                pass
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
-            except (pylast.WSError, LookupError):
-                # Can't find artist, continue
+                # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
-
+            except (pylast.WSError, LookupError):
+                # Can't find artist, continue execution
                 continue
 
-    def _archive_submission_exceeding_threshold(self, submission, service, threshold, count):
+    def _perform_exceeds_threshold_mod_action(self, submission, service):
+        if self.config.REMOVE_SUBMISSIONS is True:
+            self._remove_submission_exceeding_threshold(submission, service)
+        else:
+            submission.report('''BlotterTrax: {} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold, service.listeners_count))
+
+    def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
-            submission.author.name, service, threshold, count, submission.id
+            submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
         )
+        submission.mod.remove()
+        self._reply_with_sticky_post(submission, reply)
 
-        self._reply_with_sticky_post(submission, reply, True)
-
-    def _reply_with_sticky_post(self, submission, reply_text, remove=False):
+    def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
-
-        if remove is True:
-            submission.mod.remove()
-
-        self.database.save_submission(submission)
 
     @staticmethod
     def _get_artist_name_from_submission_title(post_title):
@@ -116,8 +112,8 @@ class BlotterTrax:
     def daemon(self):
         try:
             self._run()
-        except Exception as exception:
-            print(str(exception))
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
             time.sleep(self.crash_timeout)
             self.daemon()
 

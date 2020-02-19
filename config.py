@@ -13,6 +13,7 @@ class Config:
     LASTFM_USERNAME: str = ''
     LASTFM_PASSWORD: str = ''
     SUBREDDIT: str = ''
+    REMOVE_SUBMISSIONS: bool = False
 
     def __init__(self):
         config = configparser.ConfigParser()
@@ -24,6 +25,7 @@ class Config:
             self.PASSWORD = config['REDDIT']['PASSWORD']
             self.USER_NAME = config['REDDIT']['USER_NAME']
             self.SUBREDDIT = config['REDDIT']['SUBREDDIT']
+            self.REMOVE_SUBMISSIONS = config['REDDIT']['REMOVE_SUBMISSIONS']
 
             self.YT_KEY = config['YOUTUBE']['KEY']
 

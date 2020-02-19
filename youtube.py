@@ -27,14 +27,14 @@ class Youtube:
         self.youtubeClient = googleapiclient.discovery.build(
             api_service_name, api_version, developerKey=self.config.YT_KEY)
 
-    def get_service_result(self, parsed_url) -> ServiceResult:
+    def get_service_result(self, url) -> ServiceResult:
         """
         Get the v query from the url and use it to query for Youtube review statistics
         """
 
         # Follow URL to the end location in case of URL shorteners
         session = requests.Session()  # so connections are recycled
-        resp = session.head(parsed_url.geturl(), allow_redirects=True)
+        resp = session.head(url, allow_redirects=True)
 
         final_url = urlparse(resp.url)
 
