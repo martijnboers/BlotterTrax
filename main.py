@@ -44,20 +44,19 @@ class BlotterTrax:
 
             if submission.is_self is True:
                 self.database.save_submission(submission)
-
-            url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
-
-            parsed_url = urlparse(url)
+                # We currently don't do anything further with self posts.  Move to the next post.
+                continue
 
             artist_name = self._get_artist_name_from_submission_title(submission.title)
 
-            youtube_service = self.youtube.get_service_result(parsed_url)
-
+            # Check Youtube.
+            youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
                 self._perform_exceeds_threshold_mod_action(submission, youtube_service)
                 self.database.save_submission(submission)
                 continue
 
+            # Check Last.FM
             try:
                 last_fm_service = self.last_fm.get_service_result(artist_name)
                 if last_fm_service.exceeds_threshold is True:
@@ -85,7 +84,7 @@ class BlotterTrax:
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
-            submission.author.name, service.service_name, service.threshold, service.count, submission.id
+            submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
         )
         submission.mod.remove()
         self._reply_with_sticky_post(submission, reply)
