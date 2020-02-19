@@ -60,13 +60,15 @@ class BlotterTrax:
             try:
                 artist_name = self._get_artist_name_from_submission_title(submission.title)
             except LookupError:
-                self._reply_with_sticky_post(submission, templates.cant_find_artist)
+                self.database.save_submission(submission)
 
                 continue
 
             try:
                 last_fm_service = self.last_fm.get_service_result(artist_name)
             except pylast.WSError:
+                self.database.save_submission(submission)
+
                 continue
 
             if last_fm_service.exceeds_threshold is True:
@@ -75,7 +77,13 @@ class BlotterTrax:
                 continue
 
             # Yeey this post probably isn't breaking the rules 🌈
-            self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+            try:
+                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+            except (pylast.WSError, LookupError):
+                # Can't find artist, continue
+                self.database.save_submission(submission)
+
+                continue
 
     def _archive_submission_exceeding_threshold(self, submission, service, threshold, count):
         reply = templates.submission_exceeding_threshold.format(
