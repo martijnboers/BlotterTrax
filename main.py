@@ -39,12 +39,11 @@ class BlotterTrax:
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
             if self.database.known_submission(submission) is True:
                 continue
-            else:
-                self.database.save_submission(submission)
 
             if submission.is_self is True:
                 if '[discussion]' not in str(submission.title).lower():
                     self._remove_text_post_without_discussion_tag(submission)
+                    self.database.save_submission(submission)
                 continue
 
             url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
@@ -57,22 +56,26 @@ class BlotterTrax:
 
             if youtube_service.exceeds_threshold is True:
                 self._perform_exceeds_threshold_mod_action(submission, youtube_service)
+                self.database.save_submission(submission)
                 continue
 
             try:
                 last_fm_service = self.last_fm.get_service_result(artist_name)
                 if last_fm_service.exceeds_threshold is True:
                     self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
+                    self.database.save_submission(submission)
                     continue
             except pylast.WSError:
-                # Go ahead and continue.  Don't want to fail completely just because on service failed.
+                # Go ahead and continue execution.  Don't want to fail completely just because one service failed.
                 pass
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
-            except LookupError:
-                self._reply_with_sticky_post(submission, templates.cant_find_artist)
+                # Made it all the way.  Save submission record.
+                self.database.save_submission(submission)
+            except (pylast.WSError, LookupError):
+                # Can't find artist, continue execution
                 continue
 
     def _perform_exceeds_threshold_mod_action(self, submission, service):
