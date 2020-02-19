@@ -1,5 +1,7 @@
 import re
+import sys
 import time
+import traceback
 from urllib.parse import urlparse
 
 import pylast
@@ -82,7 +84,7 @@ class BlotterTrax:
         if self.config.REMOVE_SUBMISSIONS is True:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
-            submission.report("BlotterTrax: {} exceeds {:,}.  Actual: {:,}").format(service.service_name, service.threshold, service.count)
+            submission.report('''BlotterTrax: {} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold, service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
@@ -119,8 +121,8 @@ class BlotterTrax:
     def daemon(self):
         try:
             self._run()
-        except Exception as exception:
-            print(str(exception))
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
             time.sleep(self.crash_timeout)
             self.daemon()
 
