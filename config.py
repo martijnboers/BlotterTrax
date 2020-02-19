@@ -33,4 +33,4 @@ class Config:
             self.LASTFM_PASSWORD = config['LASTFM']['PASSWORD']
 
         except Exception:
-            exit("Please make sure reddit-credentials.ini is set")
+            exit("Please make sure conf/config.ini is set")

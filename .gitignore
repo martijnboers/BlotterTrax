@@ -1,5 +1,5 @@
 env
 conf/config.ini
 __pycache__
-submissions.db
 .idea
+database/submissions.db
