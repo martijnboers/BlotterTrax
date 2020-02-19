@@ -2,15 +2,14 @@ import re
 import sys
 import time
 import traceback
-from urllib.parse import urlparse
 
 import pylast
 from praw import Reddit
 
+import templates
 from config import Config
 from database import Database
 from lastfm import LastFM
-import templates
 from youtube import Youtube
 
 
@@ -46,9 +45,13 @@ class BlotterTrax:
                 self.database.save_submission(submission)
                 # We currently don't do anything further with self posts.  Move to the next post.
                 continue
+            try:
+                artist_name = self._get_artist_name_from_submission_title(submission.title)
+            except LookupError:
+                # Can't find artist from submission name, skipping
+                self.database.save_submission(submission)
 
-            artist_name = self._get_artist_name_from_submission_title(submission.title)
-
+                continue
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
@@ -80,7 +83,9 @@ class BlotterTrax:
         if self.config.REMOVE_SUBMISSIONS is True:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
-            submission.report('''BlotterTrax: {} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold, service.listeners_count))
+            submission.report(
+                '''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
+                                                                         service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
@@ -104,7 +109,7 @@ class BlotterTrax:
         if feature_artist is not None:
             # If there is a featuring artists, it should use the feature_artist artist result
             return feature_artist.group('artist')
-        if artist.group('artist') is not None:
+        if artist is not None and artist.group('artist') is not None:
             return artist.group('artist')
 
         raise LookupError
