@@ -7,6 +7,7 @@ from praw import Reddit
 
 from config import Config
 from database import Database
+from repostCheck import RepostCheck
 from lastfm import LastFM
 import templates
 from youtube import Youtube
@@ -19,6 +20,7 @@ class BlotterTrax:
     youtube: Youtube = None
     last_fm: LastFM = None
     database: Database = None
+    repostCheck: RepostCheck = None
     crash_timeout: int = 10
 
     def __init__(self):
@@ -27,6 +29,7 @@ class BlotterTrax:
             self.youtube = Youtube()
             self.last_fm = LastFM()
             self.database = Database()
+            self.repostCheck = RepostCheck()
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
@@ -37,6 +40,7 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+            print(submission.title)
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -51,37 +55,50 @@ class BlotterTrax:
 
             parsed_url = urlparse(url)
             youtube_service = self.youtube.get_service_result(parsed_url)
-
+            
             if youtube_service.exceeds_threshold is True:
                 self._archive_submission_exceeding_threshold(submission, youtube_service.service_name,
                                                              youtube_service.threshold, youtube_service.listeners_count)
                 continue
-
+            
             try:
                 artist_name = self._get_artist_name_from_submission_title(submission.title)
             except LookupError:
                 self.database.save_submission(submission)
 
                 continue
-
+            
             try:
-                last_fm_service = self.last_fm.get_service_result(artist_name)
-            except pylast.WSError:
+                #NOTE, This function is a placeholder, and is currently not functioning!
+                song_name = self._get_song_name_from_submission_title(submission.title)
+            except LookupError:
                 self.database.save_submission(submission)
 
                 continue
+            
+            try:
+                last_fm_service = self.last_fm.get_service_result(artist_name)
+            except pylast.WSError:
+                self._repost_process(artist_name, song_name, submission)
 
+                continue
+            
             if last_fm_service.exceeds_threshold is True:
                 self._archive_submission_exceeding_threshold(submission, last_fm_service.service_name,
                                                              last_fm_service.threshold, last_fm_service.listeners_count)
                 continue
-
+            
+            repost = self._repost_process(artist_name, song_name, submission)
+            if repost is True:
+                self._archive_repost(submission)
+                continue
+            
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name), False, artist_name)
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue
-                self.database.save_submission(submission)
+                self._repost_process(artist_name, song_name, submission)
 
                 continue
 
@@ -96,16 +113,56 @@ class BlotterTrax:
         reply = templates.submission_missing_discussion_tag.format(submission.author.name, submission.id)
 
         self._reply_with_sticky_post(submission, reply, True)
+    
+    def _archive_repost(self, submission):
+        reply = templates.submission_repost
+        
+        self._reply_with_sticky_post(submission, reply, True)
 
-    def _reply_with_sticky_post(self, submission, reply_text, remove=False):
+    def _reply_with_sticky_post(self, submission, reply_text, remove, artist_name=None):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
 
         if remove is True:
             submission.mod.remove()
 
+        #self.database.save_submission(submission)
+    
+    def _repost_process(self, artist_name, song_name, submission):
+        #always ran at same place, so saves some space
         self.database.save_submission(submission)
+        
+        return self._process_artist(artist_name.lower(), song_name.lower())
+    
+    def _process_artist(self, artist_name, song_name):
+        lastPosted = self.repostCheck.get_artist_timestamp(artist_name)
+        currentTime = time.time()
+        
+        if lastPosted is None:
+            self.repostCheck.new_entry(artist_name, song_name, currentTime)
+        else:
+            #set repost time according to the rules
+            allowedArtistTime = min(max(lastPosted[1] * 2592000, 604800), 7776000)
+            if (currentTime - allowedArtistTime) > lastPosted[0]:
+                if lastPosted[1] is 0:
+                    #do song test
+                    songPosted = self.repostCheck.search_song(artist_name, song_name)
 
+                    if songPosted is None:
+                        self.repostCheck.replace_entry(artist_name, song_name, currentTime)
+                    elif (currentTime - 604800) > songPosted[0]:
+                        self.repostCheck.replace_entry(artist_name, song_name, currentTime)
+                    else:
+                        return True
+                
+                else:
+                    self.repostCheck.replace_entry(artist_name, song_name, currentTime)
+            
+            else:
+                return True
+        
+        return False
+    
     @staticmethod
     def _get_artist_name_from_submission_title(post_title):
         artist = re.search(r'(?P<artist>.+?) \s*(-|—)\s*', post_title, re.IGNORECASE)
@@ -121,6 +178,12 @@ class BlotterTrax:
             return artist.group('artist')
 
         raise LookupError
+    
+    #NOTE, this function is a placeholder, and currently not functioning!
+    @staticmethod
+    def _get_song_name_from_submission_title(post_title):
+        return post_title
+    
 
     def daemon(self):
         try:
