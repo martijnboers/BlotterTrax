@@ -43,10 +43,7 @@ class BlotterTrax:
                 continue
 
             if submission.is_self is True:
-                if '[discussion]' not in str(submission.title).lower():
-                    self._remove_text_post_without_discussion_tag(submission)
-                    self.database.save_submission(submission)
-                continue
+                self.database.save_submission(submission)
 
             url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
 
@@ -90,11 +87,6 @@ class BlotterTrax:
         reply = templates.submission_exceeding_threshold.format(
             submission.author.name, service.service_name, service.threshold, service.count, submission.id
         )
-        submission.mod.remove()
-        self._reply_with_sticky_post(submission, reply)
-
-    def _remove_text_post_without_discussion_tag(self, submission):
-        reply = templates.submission_missing_discussion_tag.format(submission.author.name, submission.id)
         submission.mod.remove()
         self._reply_with_sticky_post(submission, reply)
 
