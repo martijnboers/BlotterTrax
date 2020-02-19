@@ -40,7 +40,17 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
-            print(submission.title)
+            
+            #start by checking if any posts posted 70+ hours ago have broken 100 upvotes, if not hit 100 delete to not check it again
+            newIDList = self.repostCheck.get_old_submissions(time.time())
+            for postID in newIDList:
+                oldSubmission = self.reddit.submission(id=postID[0])
+                oldScore = oldSubmission.score
+                if oldScore > 100:
+                    self.repostCheck.add_count(self._get_artist_name_from_submission_title(oldSubmission.title).lower())
+            
+            
+            #continue to submission processing
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -93,6 +103,7 @@ class BlotterTrax:
                 self._archive_repost(submission)
                 continue
             
+            
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name), False, artist_name)
@@ -132,14 +143,14 @@ class BlotterTrax:
         #always ran at same place, so saves some space
         self.database.save_submission(submission)
         
-        return self._process_artist(artist_name.lower(), song_name.lower())
+        return self._process_artist(artist_name.lower(), song_name.lower(), submission.id)
     
-    def _process_artist(self, artist_name, song_name):
+    def _process_artist(self, artist_name, song_name, postID):
         lastPosted = self.repostCheck.get_artist_timestamp(artist_name)
         currentTime = time.time()
         
         if lastPosted is None:
-            self.repostCheck.new_entry(artist_name, song_name, currentTime)
+            self.repostCheck.new_entry(artist_name, song_name, currentTime, postID)
         else:
             #set repost time according to the rules
             allowedArtistTime = min(max(lastPosted[1] * 2592000, 604800), 7776000)
@@ -149,14 +160,14 @@ class BlotterTrax:
                     songPosted = self.repostCheck.search_song(artist_name, song_name)
 
                     if songPosted is None:
-                        self.repostCheck.replace_entry(artist_name, song_name, currentTime)
+                        self.repostCheck.replace_entry(artist_name, song_name, currentTime, postID)
                     elif (currentTime - 604800) > songPosted[0]:
-                        self.repostCheck.replace_entry(artist_name, song_name, currentTime)
+                        self.repostCheck.replace_entry(artist_name, song_name, currentTime, postID)
                     else:
                         return True
                 
                 else:
-                    self.repostCheck.replace_entry(artist_name, song_name, currentTime)
+                    self.repostCheck.replace_entry(artist_name, song_name, currentTime, postID)
             
             else:
                 return True
