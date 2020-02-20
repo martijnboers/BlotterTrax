@@ -6,7 +6,7 @@ class RepostCheck:
     sql = None
 
     def __init__(self):
-        self.sql = sqlite3.connect('database/repost.db')
+        self.sql = sqlite3.connect('database/submissions.db')
         self.cursor = self.sql.cursor()
 
         self.cursor.execute('CREATE TABLE IF NOT EXISTS artistSubmission(artist TEXT UNIQUE NOT NULL, postTime REAL NOT NULL, repeatCount INT NOT NULL)')
