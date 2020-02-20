@@ -1,15 +1,16 @@
 import re
+import sys
 import time
-from urllib.parse import urlparse
+import traceback
 
 import pylast
 from praw import Reddit
 
+import templates
 from config import Config
 from database import Database
 from repostCheck import RepostCheck
 from lastfm import LastFM
-import templates
 from youtube import Youtube
 
 
@@ -55,25 +56,14 @@ class BlotterTrax:
                 continue
 
             if submission.is_self is True:
-                if '[discussion]' not in str(submission.title).lower():
-                    self._archive_text_post_without_discussion_tag(submission)
-                else:
-                    self.database.save_submission(submission)
-                continue
-
-            url = re.search("(?P<url>https?://[^\s]+)", submission.url).group("url")
-
-            parsed_url = urlparse(url)
-            youtube_service = self.youtube.get_service_result(parsed_url)
-            
-            if youtube_service.exceeds_threshold is True:
-                self._archive_submission_exceeding_threshold(submission, youtube_service.service_name,
-                                                             youtube_service.threshold, youtube_service.listeners_count)
+                self.database.save_submission(submission)
+                # We currently don't do anything further with self posts.  Move to the next post.
                 continue
             
             try:
                 artist_name = self._get_artist_name_from_submission_title(submission.title)
             except LookupError:
+                # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
 
                 continue
@@ -86,12 +76,23 @@ class BlotterTrax:
 
                 continue
             
+            # Check Youtube.
+            youtube_service = self.youtube.get_service_result(submission.url)
+            if youtube_service.exceeds_threshold is True:
+                self._perform_exceeds_threshold_mod_action(submission, youtube_service)
+                self.database.save_submission(submission)
+                continue
+
+            # Check Last.FM
             try:
                 last_fm_service = self.last_fm.get_service_result(artist_name)
+                if last_fm_service.exceeds_threshold is True:
+                    self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
+                    self.database.save_submission(submission)
+                    continue
             except pylast.WSError:
-                self._repost_process(artist_name, song_name, submission)
-
-                continue
+                # Go ahead and continue execution.  Don't want to fail completely just because one service failed.
+                pass
             
             if last_fm_service.exceeds_threshold is True:
                 self._archive_submission_exceeding_threshold(submission, last_fm_service.service_name,
@@ -106,38 +107,42 @@ class BlotterTrax:
             
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name), False, artist_name)
+                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue
                 self._repost_process(artist_name, song_name, submission)
-
                 continue
 
-    def _archive_submission_exceeding_threshold(self, submission, service, threshold, count):
-        reply = templates.submission_exceeding_threshold.format(
-            submission.author.name, service, threshold, count, submission.id
-        )
+    def _perform_exceeds_threshold_mod_action(self, submission, service):
+        if self.config.REMOVE_SUBMISSIONS is True:
+            self._remove_submission_exceeding_threshold(submission, service)
+        else:
+            submission.report(
+                '''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
+                                                                         service.listeners_count))
 
-        self._reply_with_sticky_post(submission, reply, True)
+    def _remove_submission_exceeding_threshold(self, submission, service):
+        reply = templates.submission_exceeding_threshold.format(
+            submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
+        )
+        submission.mod.remove()
+        self._reply_with_sticky_post(submission, reply)
+
+        self._reply_with_sticky_post(submission, reply)
 
     def _archive_text_post_without_discussion_tag(self, submission):
         reply = templates.submission_missing_discussion_tag.format(submission.author.name, submission.id)
 
-        self._reply_with_sticky_post(submission, reply, True)
+        self._reply_with_sticky_post(submission, reply)
     
     def _archive_repost(self, submission):
         reply = templates.submission_repost
         
-        self._reply_with_sticky_post(submission, reply, True)
+        self._reply_with_sticky_post(submission, reply)
 
-    def _reply_with_sticky_post(self, submission, reply_text, remove, artist_name=None):
+    def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
-
-        if remove is True:
-            submission.mod.remove()
-
-        #self.database.save_submission(submission)
     
     def _repost_process(self, artist_name, song_name, submission):
         #always ran at same place, so saves some space
@@ -173,7 +178,6 @@ class BlotterTrax:
                 return True
         
         return False
-    
     @staticmethod
     def _get_artist_name_from_submission_title(post_title):
         artist = re.search(r'(?P<artist>.+?) \s*(-|—)\s*', post_title, re.IGNORECASE)
@@ -185,7 +189,7 @@ class BlotterTrax:
         if feature_artist is not None:
             # If there is a featuring artists, it should use the feature_artist artist result
             return feature_artist.group('artist')
-        if artist.group('artist') is not None:
+        if artist is not None and artist.group('artist') is not None:
             return artist.group('artist')
 
         raise LookupError
@@ -199,8 +203,8 @@ class BlotterTrax:
     def daemon(self):
         try:
             self._run()
-        except Exception as exception:
-            print(str(exception))
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
             time.sleep(self.crash_timeout)
             self.daemon()
 

@@ -31,7 +31,7 @@ class LastFM:
             return ServiceResult(True, listeners, self.threshold_listeners, 'Last.fm listeners')
 
         if scrobbles > self.threshold_scrobbles:
-            return ServiceResult(True, scrobbles, self.threshold_scrobbles, 'Last.fm artist scrobles')
+            return ServiceResult(True, scrobbles, self.threshold_scrobbles, 'Last.fm artist scrobbles')
 
         return ServiceResult(False, scrobbles, 0, '')
 
