@@ -11,6 +11,7 @@ from config import Config
 from database import Database
 from lastfm import LastFM
 from youtube import Youtube
+from soundcloud import Soundcloud
 
 
 class BlotterTrax:
@@ -18,6 +19,7 @@ class BlotterTrax:
     useragent: str = 'BlotterTrax /r/listentothis submission bot by /u/plebianlinux'
     config: Config = None
     youtube: Youtube = None
+    soundcloud: Soundcloud = None
     last_fm: LastFM = None
     database: Database = None
     crash_timeout: int = 10
@@ -26,6 +28,7 @@ class BlotterTrax:
         try:
             self.config = Config()
             self.youtube = Youtube()
+            self.soundcloud = Soundcloud()
             self.last_fm = LastFM()
             self.database = Database()
 
@@ -56,6 +59,13 @@ class BlotterTrax:
             youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
                 self._perform_exceeds_threshold_mod_action(submission, youtube_service)
+                self.database.save_submission(submission)
+                continue
+            
+            # Check Soundcloud.
+            soundcloud_service = self.soundcloud.get_service_result(submission.url)
+            if soundcloud_service.exceeds_threshold is True:
+                self._perform_exceeds_threshold_mod_action(submission, soundcloud_service)
                 self.database.save_submission(submission)
                 continue
 
