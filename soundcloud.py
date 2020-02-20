@@ -17,9 +17,10 @@ class Soundcloud:
             return ServiceResult(False, 0, 0, '')
         
         response = requests.get('https://api.soundcloud.com/resolve.json?url=' + url + '&client_id=' + self.config.SOUNDCLOUD_KEY)
-        data = response.json()
         
-        if 'errors' in data:
+        if response.status_code is not 200:
             return ServiceResult(False, 0, 0, '')
+        
+        data = response.json()
         
         return ServiceResult(data['playback_count'] > self.Threshold, data['playback_count'], self.Threshold, 'Soundcloud plays')
