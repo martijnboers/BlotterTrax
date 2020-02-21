@@ -17,7 +17,7 @@ class Config:
     SEND_ARTIST_REPLY: bool = False
 
 
-def __init__(self):
+    def __init__(self):
         config = configparser.ConfigParser()
 
         try:
