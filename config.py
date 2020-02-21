@@ -28,7 +28,7 @@ class Config:
             self.USER_NAME = config['REDDIT']['USER_NAME']
             self.SUBREDDIT = config['REDDIT']['SUBREDDIT']
             self.REMOVE_SUBMISSIONS = config['REDDIT']['REMOVE_SUBMISSIONS']
-            self.REMOVE_SUBMISSIONS = config['REDDIT']['SEND_ARTIST_REPLY']
+            self.SEND_ARTIST_REPLY = config['REDDIT']['SEND_ARTIST_REPLY']
 
             self.YT_KEY = config['YOUTUBE']['KEY']
 
