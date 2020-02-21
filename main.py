@@ -72,7 +72,8 @@ class BlotterTrax:
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+                if self.config.SEND_ARTIST_REPLY is True:
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
                 # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
