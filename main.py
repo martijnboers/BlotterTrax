@@ -45,13 +45,18 @@ class BlotterTrax:
                 self.database.save_submission(submission)
                 # We currently don't do anything further with self posts.  Move to the next post.
                 continue
+            if "playlist" in submission.title.lower():
+                # We currently don't do anything with Playlist posts.  Move to the next post.
+                self.database.save_submission(submission)
+                continue
+
             try:
                 artist_name = self._get_artist_name_from_submission_title(submission.title)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
-
                 continue
+
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
