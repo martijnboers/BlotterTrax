@@ -15,6 +15,7 @@ class Config:
     SUBREDDIT: str = ''
     REMOVE_SUBMISSIONS: bool = False
     SEND_ARTIST_REPLY: bool = False
+    SOUNDCLOUD_KEY: str = ''
 
     def __init__(self):
         config = configparser.ConfigParser()
@@ -35,6 +36,8 @@ class Config:
             self.LASTFM_SECRET = config['LASTFM']['SECRET']
             self.LASTFM_USERNAME = config['LASTFM']['USERNAME']
             self.LASTFM_PASSWORD = config['LASTFM']['PASSWORD']
+            
+            self.SOUNDCLOUD_KEY = config['SOUNDCLOUD']['KEY']
 
         except Exception:
             exit("Please make sure conf/config.ini is set")
