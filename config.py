@@ -16,7 +16,6 @@ class Config:
     REMOVE_SUBMISSIONS: bool = False
     SEND_ARTIST_REPLY: bool = False
 
-
     def __init__(self):
         config = configparser.ConfigParser()
 
@@ -27,8 +26,8 @@ class Config:
             self.PASSWORD = config['REDDIT']['PASSWORD']
             self.USER_NAME = config['REDDIT']['USER_NAME']
             self.SUBREDDIT = config['REDDIT']['SUBREDDIT']
-            self.REMOVE_SUBMISSIONS = config['REDDIT']['REMOVE_SUBMISSIONS']
-            self.SEND_ARTIST_REPLY = config['REDDIT']['SEND_ARTIST_REPLY']
+            self.REMOVE_SUBMISSIONS = config.getboolean('REDDIT', 'REMOVE_SUBMISSIONS')
+            self.SEND_ARTIST_REPLY = config.getboolean('REDDIT', 'SEND_ARTIST_REPLY')
 
             self.YT_KEY = config['YOUTUBE']['KEY']
 
