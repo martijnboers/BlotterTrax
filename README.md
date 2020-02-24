@@ -43,7 +43,7 @@ If you have features or bugfixes don't be shy to create a pull requests or bug r
 Thanks to:
   - [Nedlinin](https://github.com/Nedlinin)
   - [TcMaX](https://github.com/TcMaX)
-  - Rotterdam based electronic music producer [BlotterTrax](https://www.discogs.com/artist/5340327-Blotter-Trax) for the name
+  - Electronic music duo [BlotterTrax](https://www.discogs.com/artist/5340327-Blotter-Trax) for the name
   
 ## License  
 You may copy, distribute and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.
