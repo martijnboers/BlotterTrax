@@ -77,7 +77,7 @@ class BlotterTrax:
             
             try:
                 #NOTE, This function is a placeholder, and is currently not functioning!
-                song_name = self._get_song_name_from_submission_title(submission.title)
+                song_name = self._get_song_name_from_submission_title(submission.title, artist_name)
             except LookupError:
                 self.database.save_submission(submission)
 
@@ -211,9 +211,53 @@ class BlotterTrax:
 
         raise LookupError
     
-    #NOTE, this function is a placeholder, and currently not functioning!
     @staticmethod
-    def _get_song_name_from_submission_title(post_title):
+    def _get_song_name_from_submission_title(post_title, artist_name):
+        
+        left_tag = ["[", "(", "<", "<<"]
+        right_tag = ["]", ")", ">", ">>"]
+        
+        artist_name = artist_name.lower()
+        post_title = post_title.lower()
+        
+        #Remove year and genre tags from post
+        for x in range(2):
+        
+            post_title = post_title.strip()
+            
+            lastChar = post_title[len(post_title) - 1]
+            
+            if(lastChar not in right_tag):
+                return
+            
+            curChar = right_tag.index(lastChar)
+            
+            if(left_tag[curChar] not in post_title):
+                return
+            
+            post_title = post_title.rsplit(left_tag[curChar], 1)[0]
+        
+        #remove artist
+        post_title = post_title.rsplit(artist_name, 1)[1]
+        
+        post_title = post_title.strip().split(None, 1)[1]
+        
+        #remove featuring tag if exists
+        featuring_list = ["feat.", "featuring", "feature", "ft."]
+        
+        for x in featuring_list:
+            if(x not in post_title):
+                continue
+            
+            postSplit = post_title.rsplit(x, 1)
+            
+            if(postSplit[0] is not ""):
+                post_title = postSplit[0]
+            
+            break
+        
+        post_title.strip()
+        
         return post_title
     
 
