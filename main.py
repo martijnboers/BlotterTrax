@@ -1,4 +1,3 @@
-import re
 import sys
 import time
 import traceback
@@ -59,7 +58,10 @@ class BlotterTrax:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
-
+            
+            #get artist for most future use
+            prioArtist = self._get_prioritized_artist(artist_name)
+            
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
@@ -76,7 +78,7 @@ class BlotterTrax:
 
             # Check Last.FM
             try:
-                last_fm_service = self.last_fm.get_service_result(artist_name)
+                last_fm_service = self.last_fm.get_service_result(prioArtist)
                 if last_fm_service.exceeds_threshold is True:
                     self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
                     self.database.save_submission(submission)
@@ -88,7 +90,7 @@ class BlotterTrax:
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prioArtist))
                 # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
@@ -113,21 +115,68 @@ class BlotterTrax:
     def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
-
+    
+    def _get_prioritized_artist(artistList):
+        if artistList[1] is None:
+            return artistList[0]
+        
+        return artistList[1]
+    
     @staticmethod
     def _get_artist_name_from_submission_title(post_title):
-        artist = re.search(r'(?P<artist>.+?) \s*(-|—)\s*', post_title, re.IGNORECASE)
-        feature_artist = re.search(
-            r'(?P<artist>.+?)\s*(&|feat.?|ft\.?|feature|featuring)\s*(?P<featureArtist>.+?)\s*(-|—)\s*',
-            post_title, re.IGNORECASE
-        )
 
-        if feature_artist is not None:
-            # If there is a featuring artists, it should use the feature_artist artist result
-            return feature_artist.group('artist')
-        if artist is not None and artist.group('artist') is not None:
-            return artist.group('artist')
-
+        #get main artist
+        dashChar = ["-","—"]
+        doubleDash = False
+        artist = None
+        for x in dashChar:
+            if((x+x) in post_title):
+                artist = post_title.split(x+x)[0].strip()
+                doubleDash = True
+                break
+        
+        if(doubleDash is False):
+            for x in dashChar:
+                if(x in post_title):
+                    artist = post_title.split(x)[0].strip()
+                    break
+        
+        
+        #get feature artist if exists
+        featureList = ["feat.", "ft.", "feature", "featuring"]
+        lowerTitle = post_title.lower()
+        featureArtist = None
+        
+        for x in featureList:
+            if x in lowerTitle:
+                featIndex = lowerTitle.index(x)
+                
+                #remove featuring from artist if exists
+                if(len(artist) > featIndex):
+                    artist = artist[:featIndex].strip()
+                
+                featIndex += len(x)
+                
+                #isolate featuring artist
+                featureArtist = post_title[featIndex:].strip()
+                break
+        
+        #further process if found
+        if featureArtist is not None:
+            typicalEndChar = [" -", ")", "[", " —"]
+            for x in typicalEndChar:
+                if x in featureArtist:
+                    featureArtist = featureArtist.split(x)[0]
+        
+        if featureArtist is not None:
+            featureArtist = featureArtist.strip()
+        
+        returnList = [artist, featureArtist]
+        
+        #if returnlist[0] is none there is no way to trust whatever is in [1] anyway as the post title is a mess.
+        if returnList[0] is not None:
+            return returnList
+        
         raise LookupError
 
     def daemon(self):
