@@ -1,6 +1,6 @@
 submission_exceeding_threshold: str = '''
 All apologies /u/{} but your post has been automatically removed because the artist has too many {}. The maximum is {:,}, this link has {:,}.
-If you think this is in error, please [contact the mods](https://www.reddit.com/message/compose?to=/r/listentothis&subject=Post+removed+in+error.&message=https://redd.it/{}). 
+If you think this is in error, please [contact the mods](https://www.reddit.com/message/compose?to=/r/listentothis&subject=Post removed in error.&message=https://redd.it/{}). 
 
 If you're new to the subreddit, please read the full list of removal reasons.
 

@@ -12,6 +12,7 @@ from database import Database
 from repostCheck import RepostCheck
 from lastfm import LastFM
 from youtube import Youtube
+from soundcloud import Soundcloud
 
 
 class BlotterTrax:
@@ -19,6 +20,7 @@ class BlotterTrax:
     useragent: str = 'BlotterTrax /r/listentothis submission bot by /u/plebianlinux'
     config: Config = None
     youtube: Youtube = None
+    soundcloud: Soundcloud = None
     last_fm: LastFM = None
     database: Database = None
     repostCheck: RepostCheck = None
@@ -28,6 +30,7 @@ class BlotterTrax:
         try:
             self.config = Config()
             self.youtube = Youtube()
+            self.soundcloud = Soundcloud()
             self.last_fm = LastFM()
             self.database = Database()
             self.repostCheck = RepostCheck()
@@ -59,13 +62,17 @@ class BlotterTrax:
                 self.database.save_submission(submission)
                 # We currently don't do anything further with self posts.  Move to the next post.
                 continue
-            
+
+            if "playlist" in submission.title.lower():
+                # We currently don't do anything with Playlist posts.  Move to the next post.
+                self.database.save_submission(submission)
+                continue
+
             try:
                 artist_name = self._get_artist_name_from_submission_title(submission.title)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
-
                 continue
             
             try:
@@ -75,11 +82,18 @@ class BlotterTrax:
                 self.database.save_submission(submission)
 
                 continue
-            
+
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
                 self._perform_exceeds_threshold_mod_action(submission, youtube_service)
+                self.database.save_submission(submission)
+                continue
+            
+            # Check Soundcloud.
+            soundcloud_service = self.soundcloud.get_service_result(submission.url)
+            if soundcloud_service.exceeds_threshold is True:
+                self._perform_exceeds_threshold_mod_action(submission, soundcloud_service)
                 self.database.save_submission(submission)
                 continue
 
@@ -107,7 +121,10 @@ class BlotterTrax:
             
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+                if self.config.SEND_ARTIST_REPLY is True:
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+                # Made it all the way.  Save submission record.
+                self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue
                 self._repost_process(artist_name, song_name, submission)
