@@ -165,7 +165,7 @@ class BlotterTrax:
         #always ran at same place, so saves some space
         self.database.save_submission(submission)
         
-        return self._process_artist(artist_name.lower(), song_name.lower(), submission.id)
+        return self._process_artist(artist_name.lower(), song_name, submission.id)
     
     def _process_artist(self, artist_name, song_name, postID):
         lastPosted = self.repostCheck.get_artist_timestamp(artist_name)
