@@ -143,7 +143,7 @@ class BlotterTrax:
         
         
         #get feature artist if exists
-        feature_list = ["feat.", "ft.", "feature", "featuring"]
+        feature_list = ['feat.', 'ft.', 'feature', 'featuring']
         lower_title = post_title.lower()
         feature_artist = None
         
@@ -163,7 +163,7 @@ class BlotterTrax:
         
         #further process if found
         if feature_artist is not None:
-            for end_char in [" -", ")", "[", " —"]:
+            for end_char in [' -', ')', '[', ' —']:
                 if end_char in feature_artist:
                     feature_artist = feature_artist.split(x)[0]
         
