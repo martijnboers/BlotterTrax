@@ -143,11 +143,10 @@ class BlotterTrax:
         
         
         #get feature artist if exists
-        feature_list = ['feat.', 'ft.', 'feature', 'featuring']
         lower_title = post_title.lower()
         feature_artist = None
         
-        for feature in feature_list:
+        for feature in ['feat.', 'ft.', 'feature', 'featuring']:
             if feature in lower_title:
                 feat_index = lower_title.index(x)
                 
