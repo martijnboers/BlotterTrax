@@ -11,6 +11,7 @@ from database import Database
 from lastfm import LastFM
 from youtube import Youtube
 from soundcloud import Soundcloud
+from title_parser import TitleParser
 
 
 class BlotterTrax:
@@ -21,6 +22,7 @@ class BlotterTrax:
     soundcloud: Soundcloud = None
     last_fm: LastFM = None
     database: Database = None
+    title_parser: TitleParser = None
     crash_timeout: int = 10
 
     def __init__(self):
@@ -30,6 +32,7 @@ class BlotterTrax:
             self.soundcloud = Soundcloud()
             self.last_fm = LastFM()
             self.database = Database()
+            self.title_parser = TitleParser()
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
@@ -53,15 +56,15 @@ class BlotterTrax:
                 continue
 
             try:
-                artist_name = self._get_artist_name_from_submission_title(submission.title)
+                artist_name = self.title_parser._get_artist_name_from_submission_title(submission.title)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
             
             #get artist for most future use
-            prio_artist = self._get_prioritized_artist(artist_name)
-            
+            prio_artist = self.title_parser._get_prioritized_artist(artist_name)
+
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
             if youtube_service.exceeds_threshold is True:
@@ -115,67 +118,6 @@ class BlotterTrax:
     def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
-
-    @staticmethod
-    def _get_prioritized_artist(artist_list):
-        if artist_list[1] is None:
-            return artist_list[0]
-        
-        return artist_list[1]
-    
-    @staticmethod
-    def _get_artist_name_from_submission_title(post_title):
-        #get main artist
-        dash_char = ['-', '—']
-        double_dash = False
-        artist = None
-        for dash in dash_char:
-            if (dash + dash) in post_title:
-                artist = post_title.split(dash + dash)[0].strip()
-                double_dash = True
-                break
-        
-        if double_dash is False:
-            for dash in dash_char:
-                if dash in post_title:
-                    artist = post_title.split(dash)[0].strip()
-                    break
-        
-        
-        #get feature artist if exists
-        lower_title = post_title.lower()
-        feature_artist = None
-        
-        for feature in ['feat.', 'ft.', 'feature', 'featuring']:
-            if feature in lower_title:
-                feat_index = lower_title.index(x)
-                
-                #remove featuring from artist if exists
-                if len(artist) > feat_index:
-                    artist = artist[:feat_index].strip()
-                
-                feat_index += len(x)
-                
-                #isolate featuring artist
-                feature_artist = post_title[featIndex:].strip()
-                break
-        
-        #further process if found
-        if feature_artist is not None:
-            for end_char in [' -', ')', '[', ' —']:
-                if end_char in feature_artist:
-                    feature_artist = feature_artist.split(x)[0]
-        
-        if feature_artist is not None:
-            feature_artist = feature_artist.strip()
-        
-        return_list = [artist, feature_artist]
-        
-        #if return_list[0] is none there is no way to trust whatever is in [1] anyway as the post title is a mess.
-        if return_list[0] is not None:
-            return return_list
-        
-        raise LookupError
 
     def daemon(self):
         try:
