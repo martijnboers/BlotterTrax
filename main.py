@@ -60,7 +60,7 @@ class BlotterTrax:
                 continue
             
             #get artist for most future use
-            prioArtist = self._get_prioritized_artist(artist_name)
+            prio_artist = self._get_prioritized_artist(artist_name)
             
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
@@ -78,7 +78,7 @@ class BlotterTrax:
 
             # Check Last.FM
             try:
-                last_fm_service = self.last_fm.get_service_result(prioArtist)
+                last_fm_service = self.last_fm.get_service_result(prio_artist)
                 if last_fm_service.exceeds_threshold is True:
                     self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
                     self.database.save_submission(submission)
@@ -90,7 +90,7 @@ class BlotterTrax:
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prioArtist))
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prio_artist))
                 # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
@@ -115,67 +115,66 @@ class BlotterTrax:
     def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
-    
-    def _get_prioritized_artist(artistList):
-        if artistList[1] is None:
-            return artistList[0]
+
+    @staticmethod
+    def _get_prioritized_artist(artist_list):
+        if artist_list[1] is None:
+            return artist_list[0]
         
-        return artistList[1]
+        return artist_list[1]
     
     @staticmethod
     def _get_artist_name_from_submission_title(post_title):
-
         #get main artist
-        dashChar = ["-","—"]
-        doubleDash = False
+        dash_char = ['-', '—']
+        double_dash = False
         artist = None
-        for x in dashChar:
-            if((x+x) in post_title):
-                artist = post_title.split(x+x)[0].strip()
-                doubleDash = True
+        for dash in dash_char:
+            if (dash + dash) in post_title:
+                artist = post_title.split(dash + dash)[0].strip()
+                double_dash = True
                 break
         
-        if(doubleDash is False):
-            for x in dashChar:
-                if(x in post_title):
-                    artist = post_title.split(x)[0].strip()
+        if double_dash is False:
+            for dash in dash_char:
+                if dash in post_title:
+                    artist = post_title.split(dash)[0].strip()
                     break
         
         
         #get feature artist if exists
-        featureList = ["feat.", "ft.", "feature", "featuring"]
-        lowerTitle = post_title.lower()
-        featureArtist = None
+        feature_list = ["feat.", "ft.", "feature", "featuring"]
+        lower_title = post_title.lower()
+        feature_artist = None
         
-        for x in featureList:
-            if x in lowerTitle:
-                featIndex = lowerTitle.index(x)
+        for feature in feature_list:
+            if feature in lower_title:
+                feat_index = lower_title.index(x)
                 
                 #remove featuring from artist if exists
-                if(len(artist) > featIndex):
-                    artist = artist[:featIndex].strip()
+                if len(artist) > feat_index:
+                    artist = artist[:feat_index].strip()
                 
-                featIndex += len(x)
+                feat_index += len(x)
                 
                 #isolate featuring artist
-                featureArtist = post_title[featIndex:].strip()
+                feature_artist = post_title[featIndex:].strip()
                 break
         
         #further process if found
-        if featureArtist is not None:
-            typicalEndChar = [" -", ")", "[", " —"]
-            for x in typicalEndChar:
-                if x in featureArtist:
-                    featureArtist = featureArtist.split(x)[0]
+        if feature_artist is not None:
+            for end_char in [" -", ")", "[", " —"]:
+                if end_char in feature_artist:
+                    feature_artist = feature_artist.split(x)[0]
         
-        if featureArtist is not None:
-            featureArtist = featureArtist.strip()
+        if feature_artist is not None:
+            feature_artist = feature_artist.strip()
         
-        returnList = [artist, featureArtist]
+        return_list = [artist, feature_artist]
         
-        #if returnlist[0] is none there is no way to trust whatever is in [1] anyway as the post title is a mess.
-        if returnList[0] is not None:
-            return returnList
+        #if return_list[0] is none there is no way to trust whatever is in [1] anyway as the post title is a mess.
+        if return_list[0] is not None:
+            return return_list
         
         raise LookupError
 
