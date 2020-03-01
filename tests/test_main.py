@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from main import BlotterTrax
+from title_parser import TitleParser
 
 
 class TestBlotterTrax(TestCase):
@@ -18,6 +18,7 @@ class TestBlotterTrax(TestCase):
             ("upsammy - Another Place - Nous'klaer 011", 'upsammy'),
         ]
         for submission_title, artist in submissions:
-            title = BlotterTrax._get_artist_name_from_submission_title(submission_title)
+            title = TitleParser._get_artist_name_from_submission_title(submission_title)
+            prio_artist = TitleParser._get_prioritized_artist(title)
 
-            self.assertEqual(artist, title)
+            self.assertEqual(artist, prio_artist)
