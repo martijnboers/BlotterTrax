@@ -22,7 +22,6 @@ class BlotterTrax:
     soundcloud: Soundcloud = None
     last_fm: LastFM = None
     database: Database = None
-    title_parser: TitleParser = None
     crash_timeout: int = 10
 
     def __init__(self):
@@ -32,7 +31,6 @@ class BlotterTrax:
             self.soundcloud = Soundcloud()
             self.last_fm = LastFM()
             self.database = Database()
-            self.title_parser = TitleParser()
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
@@ -57,14 +55,14 @@ class BlotterTrax:
                 continue
 
             try:
-                artist_name = self.title_parser._get_artist_name_from_submission_title(submission.title)
+                artist_name = TitleParser.get_artist_name_from_submission_title(submission.title)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
             
-            #get artist for most future use
-            prio_artist = self.title_parser._get_prioritized_artist(artist_name)
+            # Get artist for most future use
+            prio_artist = TitleParser.get_prioritized_artist(artist_name)
 
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
@@ -119,7 +117,8 @@ class BlotterTrax:
         submission.mod.remove(mod_note='''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
                                                                                    service.listeners_count))
 
-    def _reply_with_sticky_post(self, submission, reply_text):
+    @staticmethod
+    def _reply_with_sticky_post(submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
 
