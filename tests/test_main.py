@@ -20,7 +20,7 @@ class TestBlotterTrax(TestCase):
             ('Blume - popo -- 溺レル', 'Blume - popo', None)
         ]
         for submission_title, artist, featuring_artist in submissions:
-            title = TitleParser._get_artist_name_from_submission_title(submission_title)
+            title = TitleParser.get_artist_name_from_submission_title(submission_title)
 
             self.assertEqual(artist, title[0])
             self.assertEqual(featuring_artist, title[1])

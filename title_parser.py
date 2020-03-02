@@ -1,17 +1,14 @@
 class TitleParser:
 
-    def __init__(self):
-        print("parser loaded") #idk the IDE told me I need an init thing ¯\_(ツ)_/¯
-
     @staticmethod
-    def _get_prioritized_artist(artist_list):
+    def get_prioritized_artist(artist_list):
         if artist_list[1] is None:
             return artist_list[0]
 
         return artist_list[1]
 
     @staticmethod
-    def _get_artist_name_from_submission_title(post_title):
+    def get_artist_name_from_submission_title(post_title):
         # get main artist
         dash_char = ['-', '—']
         double_dash = False
