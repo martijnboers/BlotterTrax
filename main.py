@@ -223,7 +223,7 @@ class BlotterTrax:
         post_title = post_title.lower()
         
         #Remove year and genre tags from post
-        for x in range(2):
+        for i in range(2):
         
             post_title = post_title.strip()
             
@@ -245,13 +245,11 @@ class BlotterTrax:
         post_title = post_title.strip().split(None, 1)[1]
         
         #remove featuring tag if exists
-        featuring_list = ["feat.", "featuring", "feature", "ft."]
-        
-        for x in featuring_list:
-            if(x not in post_title):
+        for feature in ['&', 'feat.', 'featuring', 'feature', 'ft.']:
+            if(feature not in post_title):
                 continue
             
-            postSplit = post_title.rsplit(x, 1)
+            postSplit = post_title.rsplit(feature, 1)
             
             if(postSplit[0] is not ""):
                 post_title = postSplit[0]
