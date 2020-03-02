@@ -34,23 +34,23 @@ class TitleParser:
 
         for feature in ['feat.', 'ft.', 'feature', 'featuring', '&']:
             if feature in lower_title:
-                feat_index = lower_title.index(x)
+                feat_index = lower_title.index(feature)
 
                 # remove featuring from artist if exists
                 if len(artist) > feat_index:
                     artist = artist[:feat_index].strip()
 
-                feat_index += len(x)
+                feat_index += len(feature)
 
                 # isolate featuring artist
-                feature_artist = post_title[featIndex:].strip()
+                feature_artist = post_title[feat_index:].strip()
                 break
 
         # further process if found
         if feature_artist is not None:
             for end_char in [' -', ')', '[', ' —']:
                 if end_char in feature_artist:
-                    feature_artist = feature_artist.split(x)[0]
+                    feature_artist = feature_artist.split(end_char)[0]
 
         if feature_artist is not None:
             feature_artist = feature_artist.strip()
