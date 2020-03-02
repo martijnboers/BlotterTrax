@@ -46,13 +46,7 @@ class BlotterTrax:
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
             
             #start by checking if any posts posted 70+ hours ago have broken 100 upvotes, if not hit 100 delete to not check it again
-            newIDList = self.repostCheck.get_old_submissions(time.time())
-            for postID in newIDList:
-                oldSubmission = self.reddit.submission(id=postID[0])
-                oldScore = oldSubmission.score
-                if oldScore > 100:
-                    self.repostCheck.add_count(self._get_artist_name_from_submission_title(oldSubmission.title).lower())
-            
+            self._archive_succesful_post()
             
             #continue to submission processing
             if self.database.known_submission(submission) is True:
@@ -151,6 +145,14 @@ class BlotterTrax:
         reply = templates.submission_missing_discussion_tag.format(submission.author.name, submission.id)
 
         self._reply_with_sticky_post(submission, reply)
+    
+    def _archive_succesful_post(self):
+        newIDList = self.repostCheck.get_old_submissions(time.time())
+        for postID in newIDList:
+            oldSubmission = self.reddit.submission(id=postID[0])
+            oldScore = oldSubmission.score
+            if oldScore > 100:
+                self.repostCheck.add_count(self._get_artist_name_from_submission_title(oldSubmission.title).lower())
     
     def _archive_repost(self, submission):
         reply = templates.submission_repost
