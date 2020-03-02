@@ -41,7 +41,6 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
-            print(submission)
             if self.database.known_submission(submission) is True:
                 continue
 
