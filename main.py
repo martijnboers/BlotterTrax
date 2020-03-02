@@ -111,11 +111,11 @@ class BlotterTrax:
         reply = templates.submission_exceeding_threshold.format(
             submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
         )
-#        submission.mod.remove()
+
         self._reply_with_sticky_post(submission, reply)
-        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working.
-        submission.mod.remove(mod_note='''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
-                                                                                   service.listeners_count))
+        mod_message = '{} exceeds {:,}.  Actual: {:,}.'.format("Youtube", 5000, 6000)
+        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working?
+        submission.mod.remove(False, mod_message)
 
     @staticmethod
     def _reply_with_sticky_post(submission, reply_text):
