@@ -52,6 +52,5 @@ class Youtube:
 
             return ServiceResult(view_count > self.threshold, view_count, self.threshold, 'YouTube plays')
         except Exception as e:
-            print(e)
             return ServiceResult(False, 0, 0, '')
 
