@@ -1,4 +1,3 @@
-import re
 import sys
 import time
 import traceback
@@ -12,6 +11,7 @@ from database import Database
 from lastfm import LastFM
 from youtube import Youtube
 from soundcloud import Soundcloud
+from title_parser import TitleParser
 
 
 class BlotterTrax:
@@ -22,6 +22,7 @@ class BlotterTrax:
     soundcloud: Soundcloud = None
     last_fm: LastFM = None
     database: Database = None
+    title_parser: TitleParser = None
     crash_timeout: int = 10
 
     def __init__(self):
@@ -31,6 +32,7 @@ class BlotterTrax:
             self.soundcloud = Soundcloud()
             self.last_fm = LastFM()
             self.database = Database()
+            self.title_parser = TitleParser()
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
@@ -55,11 +57,14 @@ class BlotterTrax:
                 continue
 
             try:
-                artist_name = self._get_artist_name_from_submission_title(submission.title)
+                artist_name = self.title_parser._get_artist_name_from_submission_title(submission.title)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
+            
+            #get artist for most future use
+            prio_artist = self.title_parser._get_prioritized_artist(artist_name)
 
             # Check Youtube.
             youtube_service = self.youtube.get_service_result(submission.url)
@@ -77,7 +82,7 @@ class BlotterTrax:
 
             # Check Last.FM
             try:
-                last_fm_service = self.last_fm.get_service_result(artist_name)
+                last_fm_service = self.last_fm.get_service_result(prio_artist)
                 if last_fm_service.exceeds_threshold is True:
                     self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
                     self.database.save_submission(submission)
@@ -89,7 +94,7 @@ class BlotterTrax:
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prio_artist))
                 # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
@@ -117,22 +122,6 @@ class BlotterTrax:
     def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
-
-    @staticmethod
-    def _get_artist_name_from_submission_title(post_title):
-        artist = re.search(r'(?P<artist>.+?) \s*(-|—)\s*', post_title, re.IGNORECASE)
-        feature_artist = re.search(
-            r'(?P<artist>.+?)\s*(&|feat.?|ft\.?|feature|featuring)\s*(?P<featureArtist>.+?)\s*(-|—)\s*',
-            post_title, re.IGNORECASE
-        )
-
-        if feature_artist is not None:
-            # If there is a featuring artists, it should use the feature_artist artist result
-            return feature_artist.group('artist')
-        if artist is not None and artist.group('artist') is not None:
-            return artist.group('artist')
-
-        raise LookupError
 
     def daemon(self):
         try:
