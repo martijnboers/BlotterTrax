@@ -42,12 +42,16 @@ class Youtube:
             return ServiceResult(False, 0, 0, '')
 
         query = parse.parse_qs(parse.urlsplit(final_url.geturl()).query)
+        try:
+            request = self.youtubeClient.videos().list(
+                part="statistics",
+                id=query['v'][0]
+            )
+            response = request.execute()
+            view_count = int(response['items'][0]['statistics']['viewCount'])
 
-        request = self.youtubeClient.videos().list(
-            part="statistics",
-            id=query['v'][0]
-        )
-        response = request.execute()
-        view_count = int(response['items'][0]['statistics']['viewCount'])
+            return ServiceResult(view_count > self.threshold, view_count, self.threshold, 'YouTube plays')
+        except Exception as e:
+            print(e)
+            return ServiceResult(False, 0, 0, '')
 
-        return ServiceResult(view_count > self.threshold, view_count, self.threshold, 'YouTube plays')

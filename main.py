@@ -41,6 +41,7 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+            print(submission)
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -104,11 +105,14 @@ class BlotterTrax:
                                                                          service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
-        reply = templates.submission_exceeding_threshold.format(
-            submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
-        )
-        submission.mod.remove()
-        self._reply_with_sticky_post(submission, reply)
+#        reply = templates.submission_exceeding_threshold.format(
+#            submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
+#        )
+#        submission.mod.remove()
+#        self._reply_with_sticky_post(submission, reply)
+
+        submission.mod.remove(mod_note='''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
+                                                                                   service.listeners_count))
 
     def _reply_with_sticky_post(self, submission, reply_text):
         comment = submission.reply(reply_text)
