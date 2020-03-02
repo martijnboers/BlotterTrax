@@ -41,6 +41,7 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+            print(submission.permalink) # Print this to console just so we know we got a new submission.
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -107,12 +108,12 @@ class BlotterTrax:
                                                                          service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
-#        reply = templates.submission_exceeding_threshold.format(
-#            submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
-#        )
+        reply = templates.submission_exceeding_threshold.format(
+            submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
+        )
 #        submission.mod.remove()
-#        self._reply_with_sticky_post(submission, reply)
-
+        self._reply_with_sticky_post(submission, reply)
+        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working.
         submission.mod.remove(mod_note='''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
                                                                                    service.listeners_count))
 
