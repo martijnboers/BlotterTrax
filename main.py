@@ -113,7 +113,7 @@ class BlotterTrax:
         )
 
         self._reply_with_sticky_post(submission, reply)
-        mod_message = '{} exceeds {:,}.  Actual: {:,}.'.format("Youtube", 5000, 6000)
+        mod_message = '{} exceeds {:,}.  Actual: {:,}.'.format(service.service_name, service.threshold, service.listeners_count)
         # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working?
         submission.mod.remove(False, mod_message)
 
