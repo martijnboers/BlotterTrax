@@ -57,6 +57,11 @@ class BlotterTrax:
                 # We currently don't do anything further with self posts.  Move to the next post.
                 continue
 
+            if "playlist" in submission.title.lower():
+                # We currently don't do anything with Playlist posts.  Move to the next post.
+                self.database.save_submission(submission)
+                continue
+
             try:
                 artist_name = TitleParser.get_artist_name_from_submission_title(submission.title)
             except LookupError:
@@ -104,7 +109,7 @@ class BlotterTrax:
                                                              last_fm_service.threshold, last_fm_service.listeners_count)
                 continue
             
-            repost = self._repost_process(artist_name, song_name, submission)
+            repost = self._repost_process(prio_artist, song_name, submission)
             if repost is True:
                 self._reply_with_sticky_post(submission, templates.submission_repost)
                 continue
@@ -118,7 +123,7 @@ class BlotterTrax:
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue
-                self._repost_process(artist_name, song_name, submission)
+                self._repost_process(prio_artist, song_name, submission)
                 continue
 
     def _perform_exceeds_threshold_mod_action(self, submission, service):
@@ -138,11 +143,14 @@ class BlotterTrax:
 
     def _archive_succesful_post(self):
         newIDList = self.repostCheck.get_old_submissions(time.time())
+        print(newIDList)
         for postID in newIDList:
             oldSubmission = self.reddit.submission(id=postID[0])
             oldScore = oldSubmission.score
-            if oldScore > 100:
-                self.repostCheck.add_count(TitleParser.get_artist_name_from_submission_title(oldSubmission.title).lower())
+            if oldScore > 1:
+                artist = TitleParser.get_artist_name_from_submission_title(oldSubmission.title)
+                self.repostCheck.add_count(TitleParser.get_prioritized_artist(artist).lower())
+                print(artist)
 
     @staticmethod
     def _reply_with_sticky_post(submission, reply_text):
@@ -152,7 +160,9 @@ class BlotterTrax:
     def _repost_process(self, artist_name, song_name, submission):
         #always ran at same place, so saves some space
         self.database.save_submission(submission)
-        
+
+        print(artist_name)
+
         return self._process_artist(artist_name.lower(), song_name, submission.id)
     
     def _process_artist(self, artist_name, song_name, postID):
