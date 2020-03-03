@@ -138,14 +138,12 @@ class BlotterTrax:
 
     def _archive_succesful_post(self):
         newIDList = self.repostCheck.get_old_submissions(time.time())
-        print(newIDList)
         for postID in newIDList:
             oldSubmission = self.reddit.submission(id=postID[0])
             oldScore = oldSubmission.score
             if oldScore > 1:
                 artist = TitleParser.get_artist_name_from_submission_title(oldSubmission.title)
                 self.repostCheck.add_count(TitleParser.get_prioritized_artist(artist).lower())
-                print(artist)
 
     @staticmethod
     def _reply_with_sticky_post(submission, reply_text):
@@ -155,8 +153,6 @@ class BlotterTrax:
     def _repost_process(self, artist_name, song_name, submission):
         #always ran at same place, so saves some space
         self.database.save_submission(submission)
-
-        print(artist_name)
 
         return self._process_artist(artist_name.lower(), song_name, submission.id)
     
