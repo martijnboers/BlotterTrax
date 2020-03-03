@@ -18,13 +18,13 @@ class Config:
     SOUNDCLOUD_KEY: str = ''
 
     def __init__(self):
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(strict=False, interpolation=None)
 
         try:
             config.read('{}/conf/config.ini'.format(os.path.dirname(os.path.realpath(__file__))))
             self.CLIENT_ID = config['REDDIT']['CLIENT_ID']
             self.CLIENT_SECRET = config['REDDIT']['CLIENT_SECRET']
-            self.PASSWORD = config['REDDIT']['PASSWORD']
+            self.PASSWORD = config.get('REDDIT', 'PASSWORD')
             self.USER_NAME = config['REDDIT']['USER_NAME']
             self.SUBREDDIT = config['REDDIT']['SUBREDDIT']
             self.REMOVE_SUBMISSIONS = config.getboolean('REDDIT', 'REMOVE_SUBMISSIONS')
