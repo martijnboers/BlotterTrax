@@ -1,4 +1,3 @@
-import re
 import sys
 import time
 import traceback
@@ -13,6 +12,7 @@ from repostCheck import RepostCheck
 from lastfm import LastFM
 from youtube import Youtube
 from soundcloud import Soundcloud
+from title_parser import TitleParser
 
 
 class BlotterTrax:
@@ -63,11 +63,14 @@ class BlotterTrax:
                 continue
 
             try:
-                artist_name = self._get_artist_name_from_submission_title(submission.title)
+                artist_name = TitleParser.get_artist_name_from_submission_title(submission.title)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
+            
+            # Get artist for most future use
+            prio_artist = TitleParser.get_prioritized_artist(artist_name)
             
             try:
                 #NOTE, This function is a placeholder, and is currently not functioning!
@@ -93,7 +96,7 @@ class BlotterTrax:
 
             # Check Last.FM
             try:
-                last_fm_service = self.last_fm.get_service_result(artist_name)
+                last_fm_service = self.last_fm.get_service_result(prio_artist)
                 if last_fm_service.exceeds_threshold is True:
                     self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
                     self.database.save_submission(submission)
@@ -109,14 +112,14 @@ class BlotterTrax:
             
             repost = self._repost_process(artist_name, song_name, submission)
             if repost is True:
-                self._archive_repost(submission)
+                self._reply_with_sticky_post(submission, templates.submission_repost)
                 continue
             
             
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(artist_name))
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prio_artist))
                 # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
@@ -139,13 +142,6 @@ class BlotterTrax:
         submission.mod.remove()
         self._reply_with_sticky_post(submission, reply)
 
-        self._reply_with_sticky_post(submission, reply)
-
-    def _archive_text_post_without_discussion_tag(self, submission):
-        reply = templates.submission_missing_discussion_tag.format(submission.author.name, submission.id)
-
-        self._reply_with_sticky_post(submission, reply)
-    
     def _archive_succesful_post(self):
         newIDList = self.repostCheck.get_old_submissions(time.time())
         for postID in newIDList:
@@ -153,13 +149,9 @@ class BlotterTrax:
             oldScore = oldSubmission.score
             if oldScore > 100:
                 self.repostCheck.add_count(self._get_artist_name_from_submission_title(oldSubmission.title).lower())
-    
-    def _archive_repost(self, submission):
-        reply = templates.submission_repost
-        
-        self._reply_with_sticky_post(submission, reply)
 
-    def _reply_with_sticky_post(self, submission, reply_text):
+    @staticmethod
+    def _reply_with_sticky_post(submission, reply_text):
         comment = submission.reply(reply_text)
         comment.mod.distinguish("yes", sticky=True)
     
@@ -197,6 +189,7 @@ class BlotterTrax:
                 return True
         
         return False
+    
     @staticmethod
     def _get_artist_name_from_submission_title(post_title):
         artist = re.search(r'(?P<artist>.+?) \s*(-|—)\s*', post_title, re.IGNORECASE)
@@ -260,7 +253,6 @@ class BlotterTrax:
         
         return post_title
     
-
     def daemon(self):
         try:
             self._run()
