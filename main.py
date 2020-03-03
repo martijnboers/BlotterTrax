@@ -49,10 +49,6 @@ class BlotterTrax:
                 self.database.save_submission(submission)
                 # We currently don't do anything further with self posts.  Move to the next post.
                 continue
-            if "playlist" in submission.title.lower():
-                # We currently don't do anything with Playlist posts.  Move to the next post.
-                self.database.save_submission(submission)
-                continue
 
             try:
                 artist_name = TitleParser.get_artist_name_from_submission_title(submission.title)
