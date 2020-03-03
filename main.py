@@ -62,8 +62,6 @@ class BlotterTrax:
 
                     if result.exceeds_threshold is True:
                         self._perform_exceeds_threshold_mod_action(submission, result)
-                        self.database.save_submission(submission)
-
                         exceeds_threshold = True
 
                         break
@@ -72,16 +70,13 @@ class BlotterTrax:
                     # Go ahead and continue execution
                     # Don't want to fail completely just because one service failed.
                     pass
-
-            if exceeds_threshold is True:
-                continue
+                finally:
+                    self.database.save_submission(submission)
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                if self.config.SEND_ARTIST_REPLY is True:
+                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False:
                     self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
-                # Made it all the way.  Save submission record.
-                self.database.save_submission(submission)
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue execution
                 continue
