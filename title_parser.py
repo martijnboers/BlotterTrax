@@ -36,6 +36,9 @@ class TitleParser:
                 # remove featuring from artist if exists
                 if len(artist) > feat_index:
                     artist = artist[:feat_index].strip()
+                    # remove potential trailing parenthesis
+                    if artist[len(artist) - 1] is '(':
+                        artist = artist.rsplit('(', 1)[0].strip()
 
                 feat_index += len(feature)
 
@@ -63,46 +66,34 @@ class TitleParser:
     @staticmethod
     def get_song_name_from_submission_title(post_title, artist_name):
 
-        left_tag = ["[", "(", "<", "<<"]
-        right_tag = ["]", ")", ">", ">>"]
+        left_tag = ["[", "(", "<"]
 
-        artist_name = artist_name.lower()
         post_title = post_title.lower()
 
-        # Remove year and genre tags from post
-        for i in range(2):
-
-            post_title = post_title.strip()
-
-            lastChar = post_title[len(post_title) - 1]
-
-            if (lastChar not in right_tag):
-                return
-
-            curChar = right_tag.index(lastChar)
-
-            if (left_tag[curChar] not in post_title):
-                return
-
-            post_title = post_title.rsplit(left_tag[curChar], 1)[0]
-
         # remove artist
-        post_title = post_title.rsplit(artist_name, 1)[1]
-
-        post_title = post_title.strip().split(None, 1)[1]
+        post_title = post_title.rsplit(artist_name[0].lower(), 1)[1].strip()
 
         # remove featuring tag if exists
         for feature in ['&', 'feat.', 'featuring', 'feature', 'ft.']:
             if (feature not in post_title):
                 continue
 
-            postSplit = post_title.rsplit(feature, 1)
+            post_split = post_title.rsplit(feature, 1)
 
-            if (postSplit[0] is not ""):
-                post_title = postSplit[0]
+            if (post_split[0] is not "" and post_split[0] not in left_tag):
+                post_title = post_split[0]
+            else:
+                post_title = post_title.split(feature, 1)[1].strip()
+                post_title = post_title.rsplit(artist_name[1].lower(), 1)[1].strip()
+                # remove potential trailing parenthesis
+                if post_title[0] is ')':
+                    post_title = post_title.split(')', 1)[1]
 
             break
 
-        post_title.strip()
+        post_title = post_title.strip().split(None, 1)[1]
 
-        return post_title
+        for tag in left_tag:
+            post_title = post_title.split(tag, 1)[0]
+
+        return post_title.strip()
