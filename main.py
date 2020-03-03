@@ -141,7 +141,7 @@ class BlotterTrax:
         for postID in newIDList:
             oldSubmission = self.reddit.submission(id=postID[0])
             oldScore = oldSubmission.score
-            if oldScore > 1:
+            if oldScore > 100:
                 artist = TitleParser.get_artist_name_from_submission_title(oldSubmission.title)
                 self.repostCheck.add_count(TitleParser.get_prioritized_artist(artist).lower())
 
