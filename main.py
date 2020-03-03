@@ -64,7 +64,7 @@ class BlotterTrax:
                         result = service.get_service_result(submission.url)
 
                     if result.exceeds_threshold is True:
-                        self._perform_exceeds_threshold_mod_action(submission, service)
+                        self._perform_exceeds_threshold_mod_action(submission, result)
                         self.database.save_submission(submission)
 
                         exceeds_threshold = True
