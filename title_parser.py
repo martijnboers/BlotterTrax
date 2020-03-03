@@ -59,3 +59,50 @@ class TitleParser:
             return return_list
 
         raise LookupError
+
+    @staticmethod
+    def get_song_name_from_submission_title(post_title, artist_name):
+
+        left_tag = ["[", "(", "<", "<<"]
+        right_tag = ["]", ")", ">", ">>"]
+
+        artist_name = artist_name.lower()
+        post_title = post_title.lower()
+
+        # Remove year and genre tags from post
+        for i in range(2):
+
+            post_title = post_title.strip()
+
+            lastChar = post_title[len(post_title) - 1]
+
+            if (lastChar not in right_tag):
+                return
+
+            curChar = right_tag.index(lastChar)
+
+            if (left_tag[curChar] not in post_title):
+                return
+
+            post_title = post_title.rsplit(left_tag[curChar], 1)[0]
+
+        # remove artist
+        post_title = post_title.rsplit(artist_name, 1)[1]
+
+        post_title = post_title.strip().split(None, 1)[1]
+
+        # remove featuring tag if exists
+        for feature in ['&', 'feat.', 'featuring', 'feature', 'ft.']:
+            if (feature not in post_title):
+                continue
+
+            postSplit = post_title.rsplit(feature, 1)
+
+            if (postSplit[0] is not ""):
+                post_title = postSplit[0]
+
+            break
+
+        post_title.strip()
+
+        return post_title

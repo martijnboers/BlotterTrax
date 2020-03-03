@@ -73,8 +73,7 @@ class BlotterTrax:
             prio_artist = TitleParser.get_prioritized_artist(artist_name)
             
             try:
-                #NOTE, This function is a placeholder, and is currently not functioning!
-                song_name = self._get_song_name_from_submission_title(submission.title, artist_name)
+                song_name = TitleParser.get_song_name_from_submission_title(submission.title, artist_name)
             except LookupError:
                 self.database.save_submission(submission)
 
@@ -148,7 +147,7 @@ class BlotterTrax:
             oldSubmission = self.reddit.submission(id=postID[0])
             oldScore = oldSubmission.score
             if oldScore > 100:
-                self.repostCheck.add_count(self._get_artist_name_from_submission_title(oldSubmission.title).lower())
+                self.repostCheck.add_count(TitleParser.get_artist_name_from_submission_title(oldSubmission.title).lower())
 
     @staticmethod
     def _reply_with_sticky_post(submission, reply_text):
@@ -189,69 +188,6 @@ class BlotterTrax:
                 return True
         
         return False
-    
-    @staticmethod
-    def _get_artist_name_from_submission_title(post_title):
-        artist = re.search(r'(?P<artist>.+?) \s*(-|—)\s*', post_title, re.IGNORECASE)
-        feature_artist = re.search(
-            r'(?P<artist>.+?)\s*(&|feat.?|ft\.?|feature|featuring)\s*(?P<featureArtist>.+?)\s*(-|—)\s*',
-            post_title, re.IGNORECASE
-        )
-
-        if feature_artist is not None:
-            # If there is a featuring artists, it should use the feature_artist artist result
-            return feature_artist.group('artist')
-        if artist is not None and artist.group('artist') is not None:
-            return artist.group('artist')
-
-        raise LookupError
-    
-    @staticmethod
-    def _get_song_name_from_submission_title(post_title, artist_name):
-        
-        left_tag = ["[", "(", "<", "<<"]
-        right_tag = ["]", ")", ">", ">>"]
-        
-        artist_name = artist_name.lower()
-        post_title = post_title.lower()
-        
-        #Remove year and genre tags from post
-        for i in range(2):
-        
-            post_title = post_title.strip()
-            
-            lastChar = post_title[len(post_title) - 1]
-            
-            if(lastChar not in right_tag):
-                return
-            
-            curChar = right_tag.index(lastChar)
-            
-            if(left_tag[curChar] not in post_title):
-                return
-            
-            post_title = post_title.rsplit(left_tag[curChar], 1)[0]
-        
-        #remove artist
-        post_title = post_title.rsplit(artist_name, 1)[1]
-        
-        post_title = post_title.strip().split(None, 1)[1]
-        
-        #remove featuring tag if exists
-        for feature in ['&', 'feat.', 'featuring', 'feature', 'ft.']:
-            if(feature not in post_title):
-                continue
-            
-            postSplit = post_title.rsplit(feature, 1)
-            
-            if(postSplit[0] is not ""):
-                post_title = postSplit[0]
-            
-            break
-        
-        post_title.strip()
-        
-        return post_title
     
     def daemon(self):
         try:
