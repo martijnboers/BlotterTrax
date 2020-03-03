@@ -22,22 +22,22 @@ class Config:
 
         try:
             config.read('{}/../conf/config.ini'.format(os.path.dirname(os.path.realpath(__file__))))
-            self.CLIENT_ID = config['REDDIT']['CLIENT_ID']
-            self.CLIENT_SECRET = config['REDDIT']['CLIENT_SECRET']
+            self.CLIENT_ID = config.get('REDDIT', 'CLIENT_ID')
+            self.CLIENT_SECRET = config.get('REDDIT', 'CLIENT_SECRET')
             self.PASSWORD = config.get('REDDIT', 'PASSWORD')
-            self.USER_NAME = config['REDDIT']['USER_NAME']
-            self.SUBREDDIT = config['REDDIT']['SUBREDDIT']
+            self.USER_NAME = config.get('REDDIT', 'USER_NAME')
+            self.SUBREDDIT = config.get('REDDIT', 'SUBREDDIT')
             self.REMOVE_SUBMISSIONS = config.getboolean('REDDIT', 'REMOVE_SUBMISSIONS')
             self.SEND_ARTIST_REPLY = config.getboolean('REDDIT', 'SEND_ARTIST_REPLY')
 
-            self.YT_KEY = config['YOUTUBE']['KEY']
+            self.YT_KEY = config.get('YOUTUBE', 'KEY')
 
-            self.LASTFM_KEY = config['LASTFM']['KEY']
-            self.LASTFM_SECRET = config['LASTFM']['SECRET']
-            self.LASTFM_USERNAME = config['LASTFM']['USERNAME']
-            self.LASTFM_PASSWORD = config['LASTFM']['PASSWORD']
+            self.LASTFM_KEY = config.get('LASTFM', 'KEY')
+            self.LASTFM_SECRET = config.get('LASTFM', 'SECRET')
+            self.LASTFM_USERNAME = config.get('LASTFM', 'USERNAME')
+            self.LASTFM_PASSWORD = config.get('LASTFM', 'PASSWORD')
             
-            self.SOUNDCLOUD_KEY = config['SOUNDCLOUD']['KEY']
+            self.SOUNDCLOUD_KEY = config.get('SOUNDCLOUD', 'KEY')
 
         except Exception:
             exit("Please make sure conf/config.ini is set")
