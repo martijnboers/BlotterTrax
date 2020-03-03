@@ -5,13 +5,13 @@ import traceback
 import pylast
 from praw import Reddit
 
-import templates
-from config import Config
-from database import Database
-from lastfm import LastFM
-from youtube import Youtube
-from soundcloud import Soundcloud
-from title_parser import TitleParser
+from blottertrax.helper import templates
+from blottertrax.config import Config
+from blottertrax.database import Database
+from blottertrax.services.lastfm import LastFM
+from blottertrax.services.youtube import Youtube
+from blottertrax.services.soundcloud import Soundcloud
+from blottertrax.helper.title_parser import TitleParser
 
 
 class BlotterTrax:
@@ -55,7 +55,7 @@ class BlotterTrax:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
-            
+
             # Get artist for most future use
             prio_artist = TitleParser.get_prioritized_artist(artist_name)
 
@@ -65,7 +65,7 @@ class BlotterTrax:
                 self._perform_exceeds_threshold_mod_action(submission, youtube_service)
                 self.database.save_submission(submission)
                 continue
-            
+
             # Check Soundcloud.
             soundcloud_service = self.soundcloud.get_service_result(submission.url)
             if soundcloud_service.exceeds_threshold is True:
@@ -100,7 +100,7 @@ class BlotterTrax:
         else:
             submission.report(
                 '''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
-                                                                         service.listeners_count))
+                                                            service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(

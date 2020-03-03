@@ -2,9 +2,9 @@ import re
 
 import pylast
 
-import templates
-from config import Config
-from serviceresult import ServiceResult
+from blottertrax.helper import templates
+from blottertrax.config import Config
+from blottertrax.value_objects.serviceresult import ServiceResult
 
 
 class LastFM:

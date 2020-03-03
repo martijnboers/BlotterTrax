@@ -1,4 +1,3 @@
-import os
 from typing import List
 from urllib import parse
 
@@ -8,8 +7,8 @@ from urllib.parse import urlparse
 import googleapiclient.discovery
 import googleapiclient.errors
 
-from config import Config
-from serviceresult import ServiceResult
+from blottertrax.config import Config
+from blottertrax.value_objects.serviceresult import ServiceResult
 
 scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
 
