@@ -2,9 +2,10 @@ import re
 
 import pylast
 
-import templates
-from config import Config
-from serviceresult import ServiceResult
+from blottertrax.helper import templates
+from blottertrax.config import Config
+from blottertrax.value_objects.parsed_submission import ParsedSubmission
+from blottertrax.value_objects.service_result import ServiceResult
 
 
 class LastFM:
@@ -18,11 +19,11 @@ class LastFM:
                                             username=self.config.LASTFM_USERNAME,
                                             password_hash=pylast.md5(self.config.LASTFM_PASSWORD))
 
-    def get_service_result(self, artist_name: str) -> ServiceResult:
+    def get_service_result(self, parsed_submission: ParsedSubmission) -> ServiceResult:
         """
         Gets the last fm statistics for the artist name and verifies if it exceeds the given thresholds
         """
-        artist = self.network.get_artist(artist_name)
+        artist = self.network.get_artist(parsed_submission.artist)
 
         listeners = artist.get_listener_count()
         scrobbles = artist.get_playcount()
@@ -35,11 +36,11 @@ class LastFM:
 
         return ServiceResult(False, scrobbles, 0, '')
 
-    def get_artist_reply(self, artist_name) -> str:
+    def get_artist_reply(self, parsed_submission: ParsedSubmission) -> str:
         """
         Get the formatted artist reply with appended last.fm data
         """
-        artist = self.network.get_artist(artist_name)
+        artist = self.network.get_artist(parsed_submission.artist)
 
         listeners = artist.get_listener_count()
 
@@ -61,5 +62,5 @@ class LastFM:
         tag_string = ', '.join(map(lambda t: t.item.get_name(), top_tags))
 
         return templates.reply_with_last_fm_info.format(
-            artist_name, description, last_fm_url, listeners, plays, tag_string
+            parsed_submission.artist, description, last_fm_url, listeners, plays, tag_string
         )

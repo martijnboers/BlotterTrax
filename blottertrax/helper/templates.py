@@ -4,7 +4,7 @@ If you think this is in error, please [contact the mods](https://www.reddit.com/
 
 If you're new to the subreddit, please [read the full subreddit rules](https://www.reddit.com/r/listentothis/wiki/rules).
 
-_Don't blame me,_ [_I'm just a bot_](https://www.youtube.com/watch?v=jqaweMZv4Og)|[_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
+_Don't blame me, I'm just a bot_ | [_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
 '''
 
 reply_with_last_fm_info: str = '''
@@ -16,3 +16,5 @@ reply_with_last_fm_info: str = '''
 
 tags: {}
 '''
+
+mod_note_exceeding_threshold: str = '{} exceeds {:,}.  Actual: {:,}.'

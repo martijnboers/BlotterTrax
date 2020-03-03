@@ -5,32 +5,30 @@ import traceback
 import pylast
 from praw import Reddit
 
-import templates
-from config import Config
-from database import Database
-from lastfm import LastFM
-from youtube import Youtube
-from soundcloud import Soundcloud
-from title_parser import TitleParser
+from blottertrax.helper import templates
+from blottertrax.config import Config
+from blottertrax.database import Database
+from blottertrax.services.lastfm import LastFM
+from blottertrax.services.youtube import Youtube
+from blottertrax.services.soundcloud import Soundcloud
+from blottertrax.helper.title_parser import TitleParser
 
 
 class BlotterTrax:
     reddit: Reddit = None
     useragent: str = 'BlotterTrax /r/listentothis submission bot by /u/plebianlinux'
     config: Config = None
-    youtube: Youtube = None
-    soundcloud: Soundcloud = None
     last_fm: LastFM = None
     database: Database = None
     crash_timeout: int = 10
+    services: list = None
 
     def __init__(self):
         try:
             self.config = Config()
-            self.youtube = Youtube()
-            self.soundcloud = Soundcloud()
             self.last_fm = LastFM()
             self.database = Database()
+            self.services = [Youtube(), Soundcloud(), self.last_fm]
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
@@ -41,6 +39,8 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+            exceeds_threshold = False
+
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -50,46 +50,33 @@ class BlotterTrax:
                 continue
 
             try:
-                artist_name = TitleParser.get_artist_name_from_submission_title(submission.title)
+                parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
-            
-            # Get artist for most future use
-            prio_artist = TitleParser.get_prioritized_artist(artist_name)
 
-            # Check Youtube.
-            youtube_service = self.youtube.get_service_result(submission.url)
-            if youtube_service.exceeds_threshold is True:
-                self._perform_exceeds_threshold_mod_action(submission, youtube_service)
-                self.database.save_submission(submission)
-                continue
-            
-            # Check Soundcloud.
-            soundcloud_service = self.soundcloud.get_service_result(submission.url)
-            if soundcloud_service.exceeds_threshold is True:
-                self._perform_exceeds_threshold_mod_action(submission, soundcloud_service)
-                self.database.save_submission(submission)
-                continue
+            for service in self.services:
+                try:
+                    result = service.get_service_result(parsed_submission)
 
-            # Check Last.FM
-            try:
-                last_fm_service = self.last_fm.get_service_result(prio_artist)
-                if last_fm_service.exceeds_threshold is True:
-                    self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
+                    if result.exceeds_threshold is True:
+                        self._perform_exceeds_threshold_mod_action(submission, result)
+                        exceeds_threshold = True
+
+                        break
+                except Exception:
+                    traceback.print_exc(file=sys.stdout)
+                    # Go ahead and continue execution
+                    # Don't want to fail completely just because one service failed.
+                    pass
+                finally:
                     self.database.save_submission(submission)
-                    continue
-            except pylast.WSError:
-                # Go ahead and continue execution.  Don't want to fail completely just because one service failed.
-                pass
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prio_artist))
-                # Made it all the way.  Save submission record.
-                self.database.save_submission(submission)
+                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False:
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue execution
                 continue
@@ -98,15 +85,17 @@ class BlotterTrax:
         if self.config.REMOVE_SUBMISSIONS is True:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
-            submission.report(
-                '''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
-                                                                         service.listeners_count))
+            submission.report(templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
+                                                                            service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
             submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
         )
-        submission.mod.remove()
+        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working?
+        mod_message = templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
+                                                                    service.listeners_count)
+        submission.mod.remove(False, mod_message)
         self._reply_with_sticky_post(submission, reply)
 
     @staticmethod

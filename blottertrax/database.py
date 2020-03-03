@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 
@@ -6,7 +7,7 @@ class Database:
     sql = None
 
     def __init__(self):
-        self.sql = sqlite3.connect('database/submissions.db')
+        self.sql = sqlite3.connect('{}/../database/submissions.db'.format(os.path.dirname(os.path.realpath(__file__))))
         self.cursor = self.sql.cursor()
 
         self.cursor.execute('CREATE TABLE IF NOT EXISTS submissions(id TEXT)')
@@ -16,7 +17,7 @@ class Database:
         self.cursor.execute('INSERT INTO submissions VALUES(?)', [submission.id])
         self.sql.commit()
 
-    def known_submission(self, submission):
+    def known_submission(self, submission) -> bool:
         self.cursor.execute('SELECT id FROM submissions WHERE id == ?', [submission.id])
 
         return self.cursor.fetchone() is not None
