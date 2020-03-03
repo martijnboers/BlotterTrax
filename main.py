@@ -50,7 +50,7 @@ class BlotterTrax:
                 continue
 
             try:
-                title = TitleParser.create_parsed_submission_from_post_title(submission.title)
+                parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
@@ -58,10 +58,7 @@ class BlotterTrax:
 
             for service in self.services:
                 try:
-                    if isinstance(service, LastFM) is True:
-                        result = service.get_service_result(title)
-                    else:
-                        result = service.get_service_result(submission.url)
+                    result = service.get_service_result(parsed_submission)
 
                     if result.exceeds_threshold is True:
                         self._perform_exceeds_threshold_mod_action(submission, result)
@@ -82,7 +79,7 @@ class BlotterTrax:
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(title))
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
                 # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):

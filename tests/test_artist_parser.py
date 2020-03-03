@@ -19,7 +19,7 @@ class TestBlotterTrax(TestCase):
             ('ガールズロックバンド革命 - CHANGE', 'ガールズロックバンド革命', None, 'CHANGE'),
         ]
         for submission_title, artist, featuring_artist, song_title in submissions:
-            title = TitleParser.create_parsed_submission_from_post_title(submission_title)
+            title = TitleParser.create_parsed_submission_from_submission(submission_title)
 
             self.assertEqual(artist, title.artist)
             self.assertEqual(featuring_artist, title.featuring_artist)

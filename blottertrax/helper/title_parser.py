@@ -6,10 +6,11 @@ from blottertrax.value_objects.parsed_submission import ParsedSubmission
 class TitleParser:
 
     @staticmethod
-    def create_parsed_submission_from_post_title(post_title) -> ParsedSubmission:
+    def create_parsed_submission_from_submission(submission) -> ParsedSubmission:
         artist = None
         feature_artist = None
         song_title = None
+        post_title = submission.title
 
         for dash in [' - ', ' — ', ' -- ', ' - - ', ' —— ']:
             if dash in post_title:
@@ -47,6 +48,6 @@ class TitleParser:
         song_title = song_title.strip()
 
         if artist is not None:
-            return ParsedSubmission(artist, feature_artist, song_title)
+            return ParsedSubmission(artist, feature_artist, song_title, submission.url)
 
         raise LookupError

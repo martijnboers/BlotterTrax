@@ -8,6 +8,7 @@ import googleapiclient.discovery
 import googleapiclient.errors
 
 from blottertrax.config import Config
+from blottertrax.value_objects.parsed_submission import ParsedSubmission
 from blottertrax.value_objects.service_result import ServiceResult
 
 scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
@@ -26,14 +27,14 @@ class Youtube:
         self.youtubeClient = googleapiclient.discovery.build(
             api_service_name, api_version, developerKey=self.config.YT_KEY)
 
-    def get_service_result(self, url) -> ServiceResult:
+    def get_service_result(self, parsed_submission: ParsedSubmission) -> ServiceResult:
         """
         Get the v query from the url and use it to query for Youtube review statistics
         """
 
         # Follow URL to the end location in case of URL shorteners
         session = requests.Session()  # so connections are recycled
-        resp = session.head(url, allow_redirects=True)
+        resp = session.head(parsed_submission.url, allow_redirects=True)
 
         final_url = urlparse(resp.url)
 
