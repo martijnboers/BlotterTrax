@@ -41,8 +41,8 @@ class Youtube:
         if final_url.netloc not in self.youtubeUrls:
             return ServiceResult(False, 0, 0, '')
 
-        query = parse.parse_qs(parse.urlsplit(final_url.geturl()).query)
         try:
+            query = parse.parse_qs(parse.urlsplit(final_url.geturl()).query)
             request = self.youtubeClient.videos().list(
                 part="statistics",
                 id=query['v'][0]
@@ -51,6 +51,8 @@ class Youtube:
             view_count = int(response['items'][0]['statistics']['viewCount'])
 
             return ServiceResult(view_count > self.threshold, view_count, self.threshold, 'YouTube plays')
-        except Exception as e:
+        except KeyError:
+            print("Failed to get query param for YouTube lookup. Final URL was: " + final_url)
             return ServiceResult(False, 0, 0, '')
+
 
