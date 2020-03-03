@@ -25,5 +25,9 @@ class Soundcloud:
 
         data = response.json()
 
-        return ServiceResult(data['playback_count'] > self.Threshold, data['playback_count'], self.Threshold,
-                             'Soundcloud plays')
+        try:
+            return ServiceResult(data['playback_count'] > self.Threshold, data['playback_count'], self.Threshold,
+                                 'Soundcloud plays')
+        except KeyError:
+            print("Failed to get key for Soundcloud lookup. Final URL was: " + final_url)
+            return ServiceResult(False, 0, 0, '')

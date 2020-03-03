@@ -36,7 +36,7 @@ class Config:
             self.LASTFM_SECRET = config['LASTFM']['SECRET']
             self.LASTFM_USERNAME = config['LASTFM']['USERNAME']
             self.LASTFM_PASSWORD = config['LASTFM']['PASSWORD']
-            
+
             self.SOUNDCLOUD_KEY = config['SOUNDCLOUD']['KEY']
 
         except Exception:

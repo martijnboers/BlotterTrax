@@ -54,5 +54,3 @@ class Youtube:
         except KeyError:
             print("Failed to get query param for YouTube lookup. Final URL was: " + final_url)
             return ServiceResult(False, 0, 0, '')
-
-

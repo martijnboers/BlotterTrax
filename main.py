@@ -41,7 +41,7 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
-            print(submission.permalink) # Print this to console just so we know we got a new submission.
+            print(submission.permalink)  # Print this to console just so we know we got a new submission.
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -56,26 +56,34 @@ class BlotterTrax:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
-            
+
             # Get artist for most future use
             prio_artist = TitleParser.get_prioritized_artist(artist_name)
 
-            # Check Youtube.
-            youtube_service = self.youtube.get_service_result(submission.url)
-            if youtube_service.exceeds_threshold is True:
-                self._perform_exceeds_threshold_mod_action(submission, youtube_service)
-                self.database.save_submission(submission)
-                continue
-            
-            # Check Soundcloud.
-            soundcloud_service = self.soundcloud.get_service_result(submission.url)
-            if soundcloud_service.exceeds_threshold is True:
-                self._perform_exceeds_threshold_mod_action(submission, soundcloud_service)
-                self.database.save_submission(submission)
-                continue
-
-            # Check Last.FM
             try:
+                # Check Youtube.
+                youtube_service = self.youtube.get_service_result(submission.url)
+                if youtube_service.exceeds_threshold is True:
+                    self._perform_exceeds_threshold_mod_action(submission, youtube_service)
+                    self.database.save_submission(submission)
+                    continue
+            except Exception as e:
+                print("The following unhandled exception occurred during YouTube lookup:")
+                print(e)
+
+            try:
+                # Check Soundcloud.
+                soundcloud_service = self.soundcloud.get_service_result(submission.url)
+                if soundcloud_service.exceeds_threshold is True:
+                    self._perform_exceeds_threshold_mod_action(submission, soundcloud_service)
+                    self.database.save_submission(submission)
+                    continue
+            except Exception as e:
+                print("The following unhandled exception occurred during Soundcloud lookup:")
+                print(e)
+
+            try:
+                # Check Last.FM
                 last_fm_service = self.last_fm.get_service_result(prio_artist)
                 if last_fm_service.exceeds_threshold is True:
                     self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
@@ -84,6 +92,9 @@ class BlotterTrax:
             except pylast.WSError:
                 # Go ahead and continue execution.  Don't want to fail completely just because one service failed.
                 pass
+            except Exception as e:
+                print("The following unhandled exception occurred during LastFM lookup:")
+                print(e)
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
@@ -100,7 +111,7 @@ class BlotterTrax:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
             submission.report(templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
-                                                                         service.listeners_count))
+                                                                            service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
@@ -108,7 +119,8 @@ class BlotterTrax:
         )
 
         self._reply_with_sticky_post(submission, reply)
-        mod_message = templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold, service.listeners_count)
+        mod_message = templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
+                                                                    service.listeners_count)
         # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working?
         submission.mod.remove(False, mod_message)
 
