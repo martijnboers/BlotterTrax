@@ -18,19 +18,17 @@ class BlotterTrax:
     reddit: Reddit = None
     useragent: str = 'BlotterTrax /r/listentothis submission bot by /u/plebianlinux'
     config: Config = None
-    youtube: Youtube = None
-    soundcloud: Soundcloud = None
     last_fm: LastFM = None
     database: Database = None
     crash_timeout: int = 10
+    services: list = None
 
     def __init__(self):
         try:
             self.config = Config()
-            self.youtube = Youtube()
-            self.soundcloud = Soundcloud()
             self.last_fm = LastFM()
             self.database = Database()
+            self.services = [Youtube(), Soundcloud(), self.last_fm]
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
@@ -41,6 +39,8 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+            exceeds_threshold = False
+
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -50,44 +50,39 @@ class BlotterTrax:
                 continue
 
             try:
-                artist_name = TitleParser.get_artist_name_from_submission_title(submission.title)
+                title = TitleParser.create_parsed_submission_from_post_title(submission.title)
             except LookupError:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
 
-            # Get artist for most future use
-            prio_artist = TitleParser.get_prioritized_artist(artist_name)
+            for service in self.services:
+                try:
+                    if isinstance(service, LastFM) is True:
+                        result = service.get_service_result(title)
+                    else:
+                        result = service.get_service_result(submission.url)
 
-            # Check Youtube.
-            youtube_service = self.youtube.get_service_result(submission.url)
-            if youtube_service.exceeds_threshold is True:
-                self._perform_exceeds_threshold_mod_action(submission, youtube_service)
-                self.database.save_submission(submission)
+                    if result.exceeds_threshold is True:
+                        self._perform_exceeds_threshold_mod_action(submission, service)
+                        self.database.save_submission(submission)
+
+                        exceeds_threshold = True
+
+                        break
+                except Exception:
+                    traceback.print_exc(file=sys.stdout)
+                    # Go ahead and continue execution
+                    # Don't want to fail completely just because one service failed.
+                    pass
+
+            if exceeds_threshold is True:
                 continue
-
-            # Check Soundcloud.
-            soundcloud_service = self.soundcloud.get_service_result(submission.url)
-            if soundcloud_service.exceeds_threshold is True:
-                self._perform_exceeds_threshold_mod_action(submission, soundcloud_service)
-                self.database.save_submission(submission)
-                continue
-
-            # Check Last.FM
-            try:
-                last_fm_service = self.last_fm.get_service_result(prio_artist)
-                if last_fm_service.exceeds_threshold is True:
-                    self._perform_exceeds_threshold_mod_action(submission, last_fm_service)
-                    self.database.save_submission(submission)
-                    continue
-            except pylast.WSError:
-                # Go ahead and continue execution.  Don't want to fail completely just because one service failed.
-                pass
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
                 if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prio_artist))
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(title))
                 # Made it all the way.  Save submission record.
                 self.database.save_submission(submission)
             except (pylast.WSError, LookupError):

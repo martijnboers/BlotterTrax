@@ -8,7 +8,7 @@ class Soundcloud:
     config: Config = Config()
     Threshold = 500000
 
-    def get_service_result(self, url):
+    def get_service_result(self, url) -> ServiceResult:
         # Follow URL to the end location in case of URL shorteners
         session = requests.Session()  # so connections are recycled
         resp = session.head(url, allow_redirects=True)
