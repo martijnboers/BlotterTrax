@@ -4,7 +4,7 @@ import pylast
 
 from blottertrax.helper import templates
 from blottertrax.config import Config
-from blottertrax.value_objects.serviceresult import ServiceResult
+from blottertrax.value_objects.service_result import ServiceResult
 
 
 class LastFM:

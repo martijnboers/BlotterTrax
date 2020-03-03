@@ -8,7 +8,7 @@ import googleapiclient.discovery
 import googleapiclient.errors
 
 from blottertrax.config import Config
-from blottertrax.value_objects.serviceresult import ServiceResult
+from blottertrax.value_objects.service_result import ServiceResult
 
 scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
 

@@ -1,7 +1,7 @@
 import requests
 
 from blottertrax.config import Config
-from blottertrax.value_objects.serviceresult import ServiceResult
+from blottertrax.value_objects.service_result import ServiceResult
 
 
 class Soundcloud:
