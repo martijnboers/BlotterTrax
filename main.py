@@ -93,15 +93,17 @@ class BlotterTrax:
         if self.config.REMOVE_SUBMISSIONS is True:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
-            submission.report(
-                '''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
-                                                            service.listeners_count))
+            submission.report(templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
+                                                                            service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
             submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
         )
-        submission.mod.remove()
+        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working?
+        mod_message = templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
+                                                                    service.listeners_count)
+        submission.mod.remove(False, mod_message)
         self._reply_with_sticky_post(submission, reply)
 
     @staticmethod

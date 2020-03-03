@@ -16,3 +16,5 @@ reply_with_last_fm_info: str = '''
 
 tags: {}
 '''
+
+mod_note_exceeding_threshold: str = '{} exceeds {:,}.  Actual: {:,}.'
