@@ -47,6 +47,8 @@ class BlotterTrax:
             self._archive_successful_post()
             
             #continue to submission processing
+            exceeds_threshold = False
+            
             if self.database.known_submission(submission) is True:
                 continue
 
@@ -61,9 +63,6 @@ class BlotterTrax:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
-            
-            # Get artist for most future use
-            #prio_artist = TitleParser.get_prioritized_artist(artist_name)
 
             for service in self.services:
                 try:
@@ -87,13 +86,10 @@ class BlotterTrax:
                 self._perform_repost_mod_action(submission, templates.submission_repost)
                 continue
             
-            
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                if self.config.SEND_ARTIST_REPLY is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(prio_artist))
-                # Made it all the way.  Save submission record.
-                self.database.save_submission(submission)
+                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False:
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue
                 self._repost_process(parsed_submission)
@@ -103,15 +99,17 @@ class BlotterTrax:
         if self.config.REMOVE_SUBMISSIONS is True:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
-            submission.report(
-                '''{} exceeds {:,}.  Actual: {:,}'''.format(service.service_name, service.threshold,
-                                                                         service.listeners_count))
+            submission.report(templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
+                                                                            service.listeners_count))
 
     def _remove_submission_exceeding_threshold(self, submission, service):
         reply = templates.submission_exceeding_threshold.format(
             submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
         )
-        submission.mod.remove()
+        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working?
+        mod_message = templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
+                                                                    service.listeners_count)
+        submission.mod.remove(False, mod_message)
         self._reply_with_sticky_post(submission, reply)
     
     def _perform_repost_mod_action(self, submission, template):

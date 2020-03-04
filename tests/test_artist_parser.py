@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from title_parser import TitleParser
+from blottertrax.helper.title_parser import TitleParser
 
 class MockedSubmission:
     def __init__(self, title):
