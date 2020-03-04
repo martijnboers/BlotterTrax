@@ -125,11 +125,10 @@ class BlotterTrax:
 
     def _archive_successful_post(self):
         newIDList = RepostChecker.get_old_submissions(time.time())
-        print(newIDList)
         for postID in newIDList:
             oldSubmission = self.reddit.submission(id=postID[0])
             oldScore = oldSubmission.score
-            if oldScore > 1:
+            if oldScore > 100:
                 artist = TitleParser.create_parsed_submission_from_submission(oldSubmission)
                 RepostChecker.add_count(TitleParser.get_prioritized_artist(artist).lower())
 
@@ -150,8 +149,6 @@ class BlotterTrax:
         postID = parsed_submission.id
         lastPosted = RepostChecker.get_artist_timestamp(artist_name)
         currentTime = time.time()
-
-        print(artist_name)
         
         if lastPosted is None:
             RepostChecker.new_entry(artist_name, song_name, currentTime, postID)
