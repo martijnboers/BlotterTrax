@@ -2,6 +2,11 @@ from unittest import TestCase
 
 from title_parser import TitleParser
 
+class MockedSubmission:
+    def __init__(self, title):
+        self.title = title
+        self.url = 'https://url.com'
+        self.id = '7188'
 
 class TestBlotterTrax(TestCase):
 
