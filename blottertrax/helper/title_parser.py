@@ -82,7 +82,7 @@ class TitleParser:
         post_title = post_title.lower()
 
         # remove artist
-        post_title = post_title.rsplit(artist_name[0].lower(), 1)[1].strip()
+        post_title = post_title.rsplit(artist_name[0].lower(), 1)[1]
 
         # remove featuring tag if exists
         for feature in ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']:
@@ -90,7 +90,7 @@ class TitleParser:
                 continue
 
             post_split = post_title.rsplit(feature, 1)
-
+            
             if post_split[0].strip() != "" and post_split[0].strip() not in left_tag:
                 post_title = post_split[0].strip()
             else:
