@@ -1,6 +1,8 @@
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
 
 class TitleParser:
+    
+    featureKeyList = ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']
 
     @staticmethod
     def create_parsed_submission_from_submission(submission) -> ParsedSubmission:
@@ -40,7 +42,7 @@ class TitleParser:
         lower_title = post_title.lower()
         feature_artist = None
 
-        for feature in ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']:
+        for feature in featureKeyList:
             if feature in lower_title:
                 feat_index = lower_title.index(feature)
 
@@ -85,7 +87,7 @@ class TitleParser:
         post_title = post_title.rsplit(artist_name[0].lower(), 1)[1].strip()
 
         # remove featuring tag if exists
-        for feature in ['&', 'feat.', 'featuring', 'feature', 'ft.']:
+        for feature in featureKeyList:
             if (feature not in post_title):
                 continue
 
