@@ -32,4 +32,4 @@ class TestBlotterTrax(TestCase):
 
             self.assertEqual(artist, title[0])
             self.assertEqual(featuring_artist, title[1])
-            self.assertEqual(song_name, song)
+            self.assertEqual(song_name.lower(), song)
