@@ -40,7 +40,7 @@ class TitleParser:
         lower_title = post_title.lower()
         feature_artist = None
 
-        for feature in ['feat.', 'ft.', 'feature', 'featuring', '&']:
+        for feature in ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']:
             if feature in lower_title:
                 feat_index = lower_title.index(feature)
 
