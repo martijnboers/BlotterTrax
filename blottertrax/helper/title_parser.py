@@ -2,7 +2,8 @@ from blottertrax.value_objects.parsed_submission import ParsedSubmission
 
 class TitleParser:
     
-    featureKeyList = ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']
+    def __init__(self):
+        featureKeyList = ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']
 
     @staticmethod
     def create_parsed_submission_from_submission(submission) -> ParsedSubmission:
