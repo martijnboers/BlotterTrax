@@ -48,7 +48,7 @@ class TitleParser:
                 if len(artist) > feat_index:
                     artist = artist[:feat_index].strip()
                     # remove potential trailing parenthesis
-                    if artist[len(artist) - 1] is '(':
+                    if artist[len(artist) - 1] == '(':
                         artist = artist.rsplit('(', 1)[0].strip()
 
                 feat_index += len(feature)
@@ -91,13 +91,13 @@ class TitleParser:
 
             post_split = post_title.rsplit(feature, 1)
 
-            if (post_split[0] is not "" and post_split[0] not in left_tag):
+            if post_split[0] != "" and post_split[0] not in left_tag:
                 post_title = post_split[0]
             else:
                 post_title = post_title.split(feature, 1)[1].strip()
                 post_title = post_title.rsplit(artist_name[1].lower(), 1)[1].strip()
                 # remove potential trailing parenthesis
-                if post_title[0] is ')':
+                if post_title[0] == ')':
                     post_title = post_title.split(')', 1)[1]
 
             break
