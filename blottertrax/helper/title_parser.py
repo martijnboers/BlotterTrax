@@ -91,10 +91,10 @@ class TitleParser:
 
             post_split = post_title.rsplit(feature, 1)
 
-            if post_split[0] != "" and post_split[0] not in left_tag:
-                post_title = post_split[0]
+            if post_split[0].strip() != "" and post_split[0].strip() not in left_tag:
+                post_title = post_split[0].strip()
             else:
-                post_title = post_title.split(feature, 1)[1].strip()
+                post_title = post_split[1].strip()
                 post_title = post_title.rsplit(artist_name[1].lower(), 1)[1].strip()
                 # remove potential trailing parenthesis
                 if post_title[0] == ')':
