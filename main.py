@@ -156,7 +156,7 @@ class BlotterTrax:
             #set repost time according to the rules
             allowedArtistTime = min(max(lastPosted[1] * 2592000, 604800), 7776000)
             if (currentTime - allowedArtistTime) > lastPosted[0]:
-                if lastPosted[1] is 0:
+                if lastPosted[1] == 0:
                     #do song test
                     songPosted = RepostChecker.search_song(artist_name, song_name)
 
