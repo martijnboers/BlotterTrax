@@ -104,7 +104,7 @@ class TitleParser:
         
         post_title = post_title.strip()
         post_title = post_title.split(None, 1)
-        if len(post_title < 2):
+        if len(post_title) < 2:
             return None
         
         post_title = post_title[1]
