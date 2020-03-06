@@ -25,7 +25,7 @@ class Database:
 
         if parsed is not None:
             self.cursor.execute('INSERT INTO errorCausingSubmissions VALUES(?, ?, ?, ?, ?)', [raw.id, parsed.url, parsed.track_title, parsed.artist, error])
-        else
+        else:
             self.cursor.execute('INSERT INTO errorCausingSubmissions VALUES(?, ?, ?, ?, ?)', [raw.id, raw.permalink, raw.title, "", error])
         self.sql.commit()
 
