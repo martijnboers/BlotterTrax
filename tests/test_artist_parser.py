@@ -24,7 +24,8 @@ class TestBlotterTrax(TestCase):
             ("upsammy - Another Place - Nous'klaer 011", 'upsammy', None, "Another Place - Nous'klaer 011"),
             ('ガールズロックバンド革命 - CHANGE', 'ガールズロックバンド革命', None, 'CHANGE'),
             ('Blume - popo -- 溺レル', 'Blume - popo', None, '溺レル'),
-            ('Simon & Garfunkel - The Sound of Silence', 'Simon & Garfunkel', None, 'The Sound of Silence')
+            ('Simon & Garfunkel - The Sound of Silence', 'Simon & Garfunkel', None, 'The Sound of Silence'),
+            ('Badly formatted title', None, None, None)
         ]
         for submission_title, artist, featuring_artist, song_name in submissions:
             title = TitleParser.get_artist_name_from_submission_title(submission_title)
