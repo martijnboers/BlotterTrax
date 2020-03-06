@@ -23,7 +23,7 @@ class TitleParser:
         if artist is None:
             raise LookupError
 
-        for feature in [' feat. ', ' feat ', ' ft. ', ' feature ', ' featuring ', ' feat ', ' & ']:
+        for feature in [' feat. ', ' ft. ', ' feature ', ' featuring ', ' feat ', ' & ']:
             if feature not in post_title:
                 continue
 
