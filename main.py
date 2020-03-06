@@ -81,10 +81,11 @@ class BlotterTrax:
                 finally:
                     self.database.save_submission(submission)
             
-            repost = self._repost_process(parsed_submission)
-            if repost is True:
-                self._perform_repost_mod_action(submission, templates.submission_repost)
-                continue
+            if parsed_submission.song_name is not None:
+                repost = self._repost_process(parsed_submission)
+                if repost is True:
+                    self._perform_repost_mod_action(submission, templates.submission_repost)
+                    continue
             
             # Yeey this post probably isn't breaking the rules 🌈
             try:
