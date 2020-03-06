@@ -13,8 +13,6 @@ class RepostChecker:
         self.cursor.execute('CREATE TABLE IF NOT EXISTS artistSubmission(artist TEXT UNIQUE NOT NULL, postTime REAL NOT NULL, repeatCount INT NOT NULL)')
         self.cursor.execute('CREATE TABLE IF NOT EXISTS songSubmission(artistSong TEXT UNIQUE NOT NULL, postTime REAL NOT NULL)')
         self.cursor.execute('CREATE TABLE IF NOT EXISTS idStamped(postID TEXT UNIQUE NOT NULL, postTime REAL NOT NULL)')
-        
-        self.cursor.execute('SELECT * FROM artistSubmission')
     
     @classmethod
     def new_entry(self, artist_name, song_name, curr_time, postID):
@@ -43,11 +41,11 @@ class RepostChecker:
         return self.cursor.fetchone()
     
     @classmethod
-    def get_old_submissions(self, curr_time):
-        self.cursor.execute('SELECT postID FROM idStamped WHERE postTime < ?', [curr_time - 252000])
+    def get_submissions_before_time(self, time_threshold):
+        self.cursor.execute('SELECT postID FROM idStamped WHERE postTime < ?', [time_threshold])
         idList = self.cursor.fetchall()
         
-        self.cursor.execute('DELETE FROM idStamped WHERE postTime < ?', [curr_time - 252000])
+        self.cursor.execute('DELETE FROM idStamped WHERE postTime < ?', [time_threshold])
         self.sql.commit()
         
         return idList
@@ -57,4 +55,3 @@ class RepostChecker:
         self.cursor.execute('SELECT * FROM artistSubmission WHERE artist == ?', [artist_name])
         self.cursor.execute('UPDATE artistSubmission SET repeatCount = repeatCount + 1 WHERE artist == ?', [artist_name])
         self.sql.commit()
-        self.cursor.execute('SELECT * FROM artistSubmission WHERE artist == ?', [artist_name])

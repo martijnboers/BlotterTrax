@@ -44,7 +44,7 @@ class BlotterTrax:
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
             
             #start by checking if any posts posted 70+ hours ago have broken 100 upvotes, if not hit 100 delete to not check it again
-            self._archive_successful_post()
+            self._process_successful_post()
             
             #continue to submission processing
             exceeds_threshold = False
@@ -124,8 +124,8 @@ class BlotterTrax:
         submission.mod.remove()
         self._reply_with_sticky_post(submission, reply)
 
-    def _archive_successful_post(self):
-        newIDList = RepostChecker.get_old_submissions(time.time())
+    def _process_successful_post(self):
+        newIDList = RepostChecker.get_submissions_before_time(time.time() - 252000)
         for postID in newIDList:
             oldSubmission = self.reddit.submission(id=postID[0])
             oldScore = oldSubmission.score
@@ -161,9 +161,7 @@ class BlotterTrax:
                     #do song test
                     songPosted = RepostChecker.search_song(artist_name, song_name)
 
-                    if songPosted is None:
-                        RepostChecker.replace_entry(artist_name, song_name, currentTime, postID)
-                    elif (currentTime - 604800) > songPosted[0]:
+                    if songPosted is None or (currentTime - 604800) > songPosted[0]:
                         RepostChecker.replace_entry(artist_name, song_name, currentTime, postID)
                     else:
                         return True
