@@ -101,8 +101,13 @@ class TitleParser:
                     post_title = post_title.split(')', 1)[1]
 
             break
-
-        post_title = post_title.strip().split(None, 1)[1]
+        
+        post_title = post_title.strip()
+        post_title = post_title.split(None, 1)
+        if len(post_title < 2):
+            return None
+        
+        post_title = post_title[1]
 
         for tag in left_tag:
             post_title = post_title.split(tag, 1)[0]
