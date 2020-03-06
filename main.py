@@ -63,7 +63,7 @@ class BlotterTrax:
                 # Can't find artist from submission name, skipping
                 self.database.save_submission(submission)
                 continue
-
+            
             for service in self.services:
                 try:
                     result = service.get_service_result(parsed_submission)
@@ -81,7 +81,7 @@ class BlotterTrax:
                 finally:
                     self.database.save_submission(submission)
             
-            if parsed_submission.song_name is not None:
+            if parsed_submission.song_title is not None:
                 repost = self._repost_process(parsed_submission)
                 if repost is True:
                     self._perform_repost_mod_action(submission, templates.submission_repost)
@@ -125,12 +125,12 @@ class BlotterTrax:
         self._reply_with_sticky_post(submission, reply)
 
     def _process_successful_post(self):
-        newIDList = RepostChecker.get_submissions_before_time(time.time() - 252000)
-        for postID in newIDList:
-            oldSubmission = self.reddit.submission(id=postID[0])
-            oldScore = oldSubmission.score
-            if oldScore > 100:
-                artist = TitleParser.create_parsed_submission_from_submission(oldSubmission)
+        new_id_list = RepostChecker.get_submissions_before_time(time.time() - 252000)
+        for post_id in new_id_list:
+            old_submission = self.reddit.submission(id=post_id[0])
+            old_score = old_submission.score
+            if old_score > 100:
+                artist = TitleParser.create_parsed_submission_from_submission(old_submission)
                 RepostChecker.add_count(TitleParser.get_prioritized_artist(artist).lower())
 
     @staticmethod
@@ -147,27 +147,27 @@ class BlotterTrax:
     def _process_artist(self, parsed_submission):
         artist_name = TitleParser.get_prioritized_artist(parsed_submission).lower()
         song_name = parsed_submission.song_title
-        postID = parsed_submission.id
-        lastPosted = RepostChecker.get_artist_timestamp(artist_name)
-        currentTime = time.time()
+        post_id = parsed_submission.id
+        last_posted = RepostChecker.get_artist_timestamp(artist_name)
+        current_time = time.time()
         
-        if lastPosted is None:
-            RepostChecker.new_entry(artist_name, song_name, currentTime, postID)
+        if last_posted is None:
+            RepostChecker.new_entry(artist_name, song_name, current_time, post_id)
         else:
             #set repost time according to the rules
-            allowedArtistTime = min(max(lastPosted[1] * 2592000, 604800), 7776000)
-            if (currentTime - allowedArtistTime) > lastPosted[0]:
-                if lastPosted[1] == 0:
+            allowed_artist_time = min(max(last_posted[1] * 2592000, 604800), 7776000)
+            if (current_time - allowed_artist_time) > last_posted[0]:
+                if last_posted[1] == 0:
                     #do song test
-                    songPosted = RepostChecker.search_song(artist_name, song_name)
+                    song_posted = RepostChecker.search_song(artist_name, song_name)
 
-                    if songPosted is None or (currentTime - 604800) > songPosted[0]:
-                        RepostChecker.replace_entry(artist_name, song_name, currentTime, postID)
+                    if song_posted is None or (current_time - 604800) > song_posted[0]:
+                        RepostChecker.replace_entry(artist_name, song_name, current_time, post_id)
                     else:
                         return True
                 
                 else:
-                    RepostChecker.replace_entry(artist_name, song_name, currentTime, postID)
+                    RepostChecker.replace_entry(artist_name, song_name, current_time, post_id)
             
             else:
                 return True

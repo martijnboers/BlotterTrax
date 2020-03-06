@@ -15,10 +15,10 @@ class RepostChecker:
         self.cursor.execute('CREATE TABLE IF NOT EXISTS idStamped(postID TEXT UNIQUE NOT NULL, postTime REAL NOT NULL)')
     
     @classmethod
-    def new_entry(self, artist_name, song_name, curr_time, postID):
+    def new_entry(self, artist_name, song_name, curr_time, post_id):
         self.cursor.execute('INSERT OR IGNORE INTO artistSubmission VALUES(?, ?, ?)', [artist_name, curr_time, 0])
         self.cursor.execute('INSERT OR IGNORE INTO songSubmission VALUES(?, ?)', [song_name + '--||' + artist_name, curr_time])
-        self.cursor.execute('INSERT OR IGNORE INTO idStamped VALUES(?, ?)', [postID, curr_time])
+        self.cursor.execute('INSERT OR IGNORE INTO idStamped VALUES(?, ?)', [post_id, curr_time])
         self.sql.commit()
     
     @classmethod
@@ -28,10 +28,10 @@ class RepostChecker:
         return self.cursor.fetchone()
     
     @classmethod
-    def replace_entry(self, artist_name, song_name, curr_time, postID):
+    def replace_entry(self, artist_name, song_name, curr_time, post_id):
         self.cursor.execute('UPDATE artistSubmission SET postTime=? WHERE artist == ?', [curr_time, artist_name])
         self.cursor.execute('INSERT OR REPLACE INTO songSubmission VALUES(?, ?)', [song_name + '--||' + artist_name, curr_time])
-        self.cursor.execute('INSERT OR IGNORE INTO idStamped VALUES(?, ?)', [postID, curr_time])
+        self.cursor.execute('INSERT OR IGNORE INTO idStamped VALUES(?, ?)', [post_id, curr_time])
         self.sql.commit()
     
     @classmethod
