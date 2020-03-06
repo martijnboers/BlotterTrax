@@ -23,8 +23,8 @@ class TitleParser:
         if artist is None:
             raise LookupError
 
-        for feature in [' feat. ', ' ft. ', ' feature ', ' featuring ', ' feat ']:
-            if feature not in post_title or artist is None:
+        for feature in [' feat. ', ' feat ', ' ft. ', ' feature ', ' featuring ', ' feat ', ' & ']:
+            if feature not in post_title:
                 continue
 
             feat_index = post_title.index(feature)
@@ -49,8 +49,8 @@ class TitleParser:
             raise LookupError
 
         # Remove everything between () and []
-        song_title = re.sub(r"\(.*\)", "", song_title)
-        song_title = re.sub(r"[.*]", "", song_title)
+        song_title = re.sub(r"\((.*?)\)", "", song_title)
+        song_title = re.sub(r"\[(.*?)\]", "", song_title)
         song_title = song_title.strip()
 
         if artist is not None:

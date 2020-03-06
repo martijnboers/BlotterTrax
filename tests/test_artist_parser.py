@@ -19,15 +19,16 @@ class TestBlotterTrax(TestCase):
              'Một Cuộc Sống Khác'),
             ('007Bonez & Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'Motion'),
             ('007Bonez featuring Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'Motion'),
-            ('007Bonez feat Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez feat Adro', None, 'Motion'),
+            ('007Bonez feat Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'Motion'),
             ('007Bonez feat. Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'Motion'),
             ('Teen Suicide — Haunt Me x3 [indie rock] (2014)', 'Teen Suicide', None, 'Haunt Me x3'),
-            ("upsammy - Another Place - Nous'klaer 011", 'upsammy', None, "Another Place - Nous'klaer 011"),
+            ("upsammy - Another Place - Nous'klaer 011", 'upsammy', None, "Another Place"), # should Nous'klaer 011 actually be included for title?
             ('ガールズロックバンド革命 - CHANGE', 'ガールズロックバンド革命', None, 'CHANGE'),
         ]
+
         for submission_title, artist, featuring_artist, song_title in submissions:
             title = TitleParser.create_parsed_submission_from_submission(MockedSubmission(submission_title))
 
             self.assertEqual(artist, title.artist)
             self.assertEqual(featuring_artist, title.featuring_artist)
-            # self.assertEqual(song_title, title.track_title)
+            self.assertEqual(song_title, title.track_title)
