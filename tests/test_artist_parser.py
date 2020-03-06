@@ -25,7 +25,7 @@ class TestBlotterTrax(TestCase):
             ('ガールズロックバンド革命 - CHANGE', 'ガールズロックバンド革命', None, 'CHANGE'),
             ('Blume - popo -- 溺レル', 'Blume - popo', None, '溺レル'),
             ('Simon & Garfunkel - The Sound of Silence', 'Simon & Garfunkel', None, 'The Sound of Silence'),
-            ('Badly formatted title -', 'Badly formatted title', None, None)
+            ('Badly formatted title -', 'Badly formatted title', None, None),
             ('Another badly formatted title -    ', 'Another badly formatted title', None, None)
         ]
         for submission_title, artist, featuring_artist, song_name in submissions:
