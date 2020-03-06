@@ -39,6 +39,8 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+            print(submission.title + "-" + submission.permalink)
+
             exceeds_threshold = False
 
             if self.database.known_submission(submission) is True:
@@ -53,7 +55,7 @@ class BlotterTrax:
                 parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
             except LookupError:
                 # Can't find artist from submission name, skipping
-                self.database.save_submission(submission)
+                self.database.log_error_causing_submission(None, submission, traceback.format_exc(), True)
                 continue
 
             for service in self.services:
@@ -67,6 +69,7 @@ class BlotterTrax:
                         break
                 except Exception:
                     traceback.print_exc(file=sys.stdout)
+                    self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
                     # Go ahead and continue execution
                     # Don't want to fail completely just because one service failed.
                     pass
