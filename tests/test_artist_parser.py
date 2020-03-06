@@ -30,7 +30,10 @@ class TestBlotterTrax(TestCase):
         for submission_title, artist, featuring_artist, song_name in submissions:
             title = TitleParser.get_artist_name_from_submission_title(submission_title)
             song = TitleParser.get_song_name_from_submission_title(submission_title, title)
-
+            
+            if song_name is not None:
+                song_name = song_name.lower()
+            
             self.assertEqual(artist, title[0])
             self.assertEqual(featuring_artist, title[1])
-            self.assertEqual(song_name.lower(), song)
+            self.assertEqual(song_name, song)
