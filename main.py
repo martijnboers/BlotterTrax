@@ -39,7 +39,7 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
-            print(submission.title + "-" + submission.permalink)
+            print(submission.title + " - http://reddit.com" + submission.permalink)
 
             exceeds_threshold = False
 
