@@ -24,7 +24,7 @@ class Database:
             self.save_submission(raw) # Save it so we will skip it next time we parse.
 
         if parsed is not None:
-            self.cursor.execute('INSERT INTO errorCausingSubmissions VALUES(?, ?, ?, ?, ?, ?, ?)', [raw.id, raw.permalink, parsed.url, raw.title, parsed.track_title, parsed.artist, error])
+            self.cursor.execute('INSERT INTO errorCausingSubmissions VALUES(?, ?, ?, ?, ?, ?, ?)', [raw.id, raw.permalink, parsed.url, raw.title, parsed.artist, parsed.track_title, error])
         else:
             self.cursor.execute('INSERT INTO errorCausingSubmissions VALUES(?, ?, ?, ?, ?, ?, ?)', [raw.id, raw.permalink, raw.url, raw.title, "", "", error])
         self.sql.commit()
