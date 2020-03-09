@@ -7,6 +7,14 @@ If you're new to the subreddit, please [read the full subreddit rules](https://w
 _Don't blame me, I'm just a bot_ | [_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
 '''
 
+submission_repost: str = '''
+>**Artist Reposting**
+
+This post has been removed due to the artist having been posted too recently. No artist may be posted more than once a week and you may not use the same song within a 30 day period. Artists with posts that score more than 100pts may not be posted for the next month; artists that gain multiple posts of 100pts will be put on a cooldown for up to 90 days.
+
+A full explanation of this rule can be found [here](https://www.reddit.com/r/listentothis/wiki/rules).
+'''
+
 reply_with_last_fm_info: str = '''
 **{}**
 
