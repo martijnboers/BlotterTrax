@@ -27,7 +27,8 @@ class TestBlotterTrax(TestCase):
             ('Simon & Garfunkel - The Sound of Silence', 'Simon & Garfunkel', None, 'the sound of silence'),
             ('Badly formatted title -', 'Badly formatted title', None, None),
             ('Another badly formatted title -    ', 'Another badly formatted title', None, None),
-            ('a-B (FEAT c) - -- - d [e/f](g)', 'a-B', 'c', 'd')
+            ('a-B (FEAT c) - -- - d [e/f](g)', 'a-B', 'c', 'd'),
+            ("Meers – Don't Tell The Circus [Indie Pop] (2020)", 'Meers', None, "don't tell the circus")
         ]
         for submission_title, artist, featuring_artist, song_title in submissions:
             title = TitleParser.create_parsed_submission_from_submission(MockedSubmission(submission_title))
