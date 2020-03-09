@@ -4,7 +4,6 @@ If you think this is in error, please [contact the mods](https://www.reddit.com/
 
 If you're new to the subreddit, please [read the full subreddit rules](https://www.reddit.com/r/listentothis/wiki/rules).
 
-
 _Don't blame me, I'm just a bot_ | [_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
 '''
 
