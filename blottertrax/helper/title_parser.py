@@ -6,11 +6,8 @@ class TitleParser:
     @classmethod
     def create_parsed_submission_from_submission(self, submission) -> ParsedSubmission:
         artist = self.get_artist_name_from_submission_title(submission.title)
-        if artist[0] is not None:
-            song = self.get_song_name_from_submission_title(submission.title, artist)
-            return ParsedSubmission(artist[0], artist[1], song, submission.url) #, submission.id)
-
-        raise LookupError
+        song = self.get_song_name_from_submission_title(submission.title, artist)
+        return ParsedSubmission(artist[0], artist[1], song, submission.url) #, submission.id)
 
     # If featuring artist exists, returns featuring artist, else returns main artist.
     @staticmethod
@@ -18,7 +15,7 @@ class TitleParser:
         if parsed_submission.featuring_artist is None:
             return parsed_submission.artist
 
-        return parsed_submission.artist
+        return parsed_submission.featuring_artist
 
     #iterate and remove prioritized dash. Second variable denotes whether looking for artist (0) or song (1)
     @staticmethod
