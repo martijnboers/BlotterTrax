@@ -6,7 +6,6 @@ class Database:
     sql = None
 
     def __init__(self):
-
         self.sql = sqlite3.connect('{}/../database/submissions.db')
         self.cursor = self.sql.cursor()
 
@@ -16,7 +15,6 @@ class Database:
     def save_submission(self, submission):
         self.cursor.execute('INSERT INTO submissions VALUES(?)', [submission.id])
         self.sql.commit()
-
 
     def known_submission(self, submission) -> bool:
         self.cursor.execute('SELECT id FROM submissions WHERE id == ?', [submission.id])
