@@ -52,6 +52,5 @@ class RepostChecker:
     
     @classmethod
     def add_count(self, artist_name):
-        self.cursor.execute('SELECT * FROM artistSubmission WHERE artist == ?', [artist_name])
         self.cursor.execute('UPDATE artistSubmission SET repeatCount = repeatCount + 1 WHERE artist == ?', [artist_name])
         self.sql.commit()
