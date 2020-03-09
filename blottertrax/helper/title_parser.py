@@ -23,7 +23,7 @@ class TitleParser:
     #iterate and remove prioritized dash. Second variable denotes whether looking for artist (0) or song (1)
     @staticmethod
     def remove_prioritized_dash(post_title, is_song):
-        dash_char = ['-', '—']
+        dash_char = ['-', '—', '–']
         # iterate each of the set dash characters
         for dash in dash_char:
             # First check for instances of the dash character appearing twice in a row. We want to prioritize this
