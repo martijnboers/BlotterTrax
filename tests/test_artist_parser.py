@@ -8,26 +8,30 @@ class MockedSubmission:
         self.title = title
         self.url = 'https://url.com'
 
-
 class TestBlotterTrax(TestCase):
 
     def test_extract_artist_post_title(self):
         submissions = [
-            ('B12 - Infinite Lites (Original Mix) ', 'B12', None, 'Infinite Lites'),
-            ('Floating Points - Last Bloom ', 'Floating Points', None, 'Last Bloom'),
-            ('Empty Spaces -- Một Cuộc Sống Khác [Vietnamese/Alternative] (2019) ', 'Empty Spaces', None,
-             'Một Cuộc Sống Khác'),
-            ('007Bonez & Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'Motion'),
-            ('007Bonez featuring Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'Motion'),
-            ('007Bonez feat Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez feat Adro', None, 'Motion'),
-            ('007Bonez feat. Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'Motion'),
-            ('Teen Suicide — Haunt Me x3 [indie rock] (2014)', 'Teen Suicide', None, 'Haunt Me x3'),
-            ("upsammy - Another Place - Nous'klaer 011", 'upsammy', None, "Another Place - Nous'klaer 011"),
-            ('ガールズロックバンド革命 - CHANGE', 'ガールズロックバンド革命', None, 'CHANGE'),
+            ('B12 - Infinite Lites (Original Mix) ', 'B12', None, 'infinite lites'),
+            ('Floating Points - Last Bloom ', 'Floating Points', None, 'last bloom'),
+            ('Empty Spaces -- Một Cuộc Sống Khác [Vietnamese/Alternative] (2019) ', 'Empty Spaces', None, 'một cuộc sống khác'),
+            ('007Bonez featuring Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
+            ('007Bonez feat Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
+            ('007Bonez feat. Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
+            ('007Bonez - Motion featuring Adro [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
+            ('007Bonez (featuring Adro) - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
+            ('Teen Suicide — Haunt Me x3 [indie rock] (2014)', 'Teen Suicide', None, 'haunt me x3'),
+            ("upsammy - Another Place - Nous'klaer 011", 'upsammy', None, "another place - nous'klaer 011"),
+            ('ガールズロックバンド革命 - CHANGE', 'ガールズロックバンド革命', None, 'change'),
+            ('Blume - popo -- 溺レル', 'Blume - popo', None, '溺レル'),
+            ('Simon & Garfunkel - The Sound of Silence', 'Simon & Garfunkel', None, 'the sound of silence'),
+            ('Badly formatted title -', 'Badly formatted title', None, None),
+            ('Another badly formatted title -    ', 'Another badly formatted title', None, None),
+            ('a-B (FEAT c) - -- - d [e/f](g)', 'a-B', 'c', 'd')
         ]
         for submission_title, artist, featuring_artist, song_title in submissions:
             title = TitleParser.create_parsed_submission_from_submission(MockedSubmission(submission_title))
 
             self.assertEqual(artist, title.artist)
             self.assertEqual(featuring_artist, title.featuring_artist)
-            # self.assertEqual(song_title, title.track_title)
+            self.assertEqual(song_title, title.track_title)
