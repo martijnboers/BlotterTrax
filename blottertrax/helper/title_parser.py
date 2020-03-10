@@ -21,7 +21,7 @@ class TitleParser:
                 break
 
         if artist is None:
-            raise LookupError
+            return ParsedSubmission(False, '', '', '', submission.url)
 
         for feature in [' feat. ', ' ft. ', ' feature ', ' featuring ', ' feat ', ' & ']:
             if feature not in post_title:
@@ -46,7 +46,7 @@ class TitleParser:
                     break
 
         if song_title is None:
-            raise LookupError
+            return ParsedSubmission(False, '', '', '', submission.url)
 
         # Remove everything between () and []
         song_title = re.sub(r"\((.*?)\)", "", song_title)
