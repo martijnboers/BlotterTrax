@@ -59,6 +59,8 @@ class BlotterTrax:
                     self._perform_exceeds_threshold_mod_action(submission, result)
                     exceeds_threshold = True
 
+                    break
+
                 except Exception:
                     # Go ahead and continue execution, don't want to fail completely just because one service failed.
                     traceback.print_exc(file=sys.stdout)
