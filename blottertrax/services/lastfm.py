@@ -2,6 +2,7 @@ import re
 
 import pylast
 
+from blottertrax.exceptions.service_requires_parsed_submission import ServiceRequiresParsedSubmission
 from blottertrax.helper import templates
 from blottertrax.config import Config
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
@@ -40,6 +41,9 @@ class LastFM:
         """
         Get the formatted artist reply with appended last.fm data
         """
+        if parsed_submission.success is False:
+            raise ServiceRequiresParsedSubmission
+
         artist = self.network.get_artist(parsed_submission.artist)
 
         listeners = artist.get_listener_count()

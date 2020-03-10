@@ -41,19 +41,15 @@ class BlotterTrax:
     def _run(self):
         for submission in self._get_submissions():
             exceeds_threshold = False
+            parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
 
-            try:
-                parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
-            except LookupError:
-                # Can't find artist from submission name, skipping
-                self.database.log_error_causing_submission(None, submission, traceback.format_exc(), True)
-                continue
-
-            if ExcludedArtists.is_excluded(parsed_submission.artist) is True:
+            if ExcludedArtists.is_excluded(parsed_submission):
                 continue
 
             for service in self.services:
                 try:
+                    # Some services can run without a successful parsed submission and just need the url
+                    # If this is not the case, it will throw an exception and continue
                     result = service.get_service_result(parsed_submission)
 
                     if result.exceeds_threshold is False:
@@ -67,9 +63,11 @@ class BlotterTrax:
                     traceback.print_exc(file=sys.stdout)
                     self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
 
-                    pass
-                finally:
-                    self.database.save_submission(submission)
+            # submission is analyzed, saving
+            self.database.save_submission(submission)
+
+            if parsed_submission.success is False:
+                continue
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
@@ -77,7 +75,7 @@ class BlotterTrax:
                     self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
             except (pylast.WSError, LookupError):
                 # Can't find artist, continue execution
-                continue
+                self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
 
     def _get_submissions(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():

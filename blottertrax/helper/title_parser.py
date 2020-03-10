@@ -54,6 +54,6 @@ class TitleParser:
         song_title = song_title.strip()
 
         if artist is not None:
-            return ParsedSubmission(artist, feature_artist, song_title, submission.url)
+            return ParsedSubmission(True, artist, feature_artist, song_title, submission.url)
 
-        raise LookupError
+        return ParsedSubmission(False, '', '', '', submission.url)

@@ -1,3 +1,6 @@
+from blottertrax.value_objects.parsed_submission import ParsedSubmission
+
+
 class ExcludedArtists:
     excluded_artists: list = [
         'various artists',
@@ -5,5 +8,5 @@ class ExcludedArtists:
     ]
 
     @staticmethod
-    def is_excluded(artist_name: str) -> bool:
-        return artist_name.lower() in ExcludedArtists.excluded_artists
+    def is_excluded(parsed_submission: ParsedSubmission) -> bool:
+        return parsed_submission.success is True and parsed_submission.artist.lower() in ExcludedArtists.excluded_artists

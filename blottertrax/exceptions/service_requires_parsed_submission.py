@@ -1,0 +1,2 @@
+class ServiceRequiresParsedSubmission(Exception):
+    pass
