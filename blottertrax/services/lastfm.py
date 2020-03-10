@@ -2,6 +2,7 @@ import re
 
 import pylast
 
+from blottertrax.exceptions.empty_description import EmptyDescription
 from blottertrax.exceptions.service_requires_parsed_submission import ServiceRequiresParsedSubmission
 from blottertrax.helper import templates
 from blottertrax.config import Config
@@ -57,7 +58,7 @@ class LastFM:
         description = description.replace("\n", "\n>")
 
         if description == '':
-            raise LookupError
+            raise EmptyDescription
 
         plays = artist.get_playcount()
         top_tags = artist.get_top_tags(limit=5)

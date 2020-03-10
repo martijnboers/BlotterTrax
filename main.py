@@ -5,6 +5,7 @@ import traceback
 import pylast
 from praw import Reddit
 
+from blottertrax.exceptions.empty_description import EmptyDescription
 from blottertrax.helper import templates
 from blottertrax.config import Config
 from blottertrax.database import Database
@@ -73,8 +74,8 @@ class BlotterTrax:
             try:
                 if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False:
                     self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
-            except (pylast.WSError, LookupError):
-                # Can't find artist, continue execution
+            except (pylast.WSError, EmptyDescription):
+                # Can't find artist or description is empty, logging
                 self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
 
     def _get_submissions(self):
