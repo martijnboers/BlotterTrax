@@ -58,7 +58,7 @@ class LastFM:
         description = description.replace("\n", "\n>")
 
         if description == '':
-            raise EmptyDescription
+            raise EmptyDescription()
 
         plays = artist.get_playcount()
         top_tags = artist.get_top_tags(limit=5)
