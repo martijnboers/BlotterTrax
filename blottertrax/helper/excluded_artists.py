@@ -4,7 +4,9 @@ from blottertrax.value_objects.parsed_submission import ParsedSubmission
 class ExcludedArtists:
     excluded_artists: list = [
         'various artists',
-        'anonymous'
+        'anonymous',
+        'va',
+        'various'
     ]
 
     @staticmethod

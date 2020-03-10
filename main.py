@@ -53,28 +53,20 @@ class BlotterTrax:
                     # If this is not the case, it will throw an exception and continue
                     result = service.get_service_result(parsed_submission)
 
-                    if result.exceeds_threshold is False:
-                        continue
+                    if result.exceeds_threshold is True:
+                        self._perform_exceeds_threshold_mod_action(submission, result)
+                        exceeds_threshold = True
 
-                    self._perform_exceeds_threshold_mod_action(submission, result)
-                    exceeds_threshold = True
-
-                    break
+                        break
 
                 except Exception:
                     # Go ahead and continue execution, don't want to fail completely just because one service failed.
                     traceback.print_exc(file=sys.stdout)
                     self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
 
-            # submission is analyzed, saving
-            self.database.save_submission(submission)
-
-            if parsed_submission.success is False:
-                continue
-
             # Yeey this post probably isn't breaking the rules 🌈
             try:
-                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False:
+                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False and parsed_submission.success is True:
                     self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
             except (pylast.WSError, EmptyDescription):
                 # Can't find artist or description is empty, logging
@@ -91,6 +83,9 @@ class BlotterTrax:
                 self.database.save_submission(submission)
                 # We currently don't do anything further with self posts.  Move to the next post.
                 continue
+
+            # Always save submissions, in case of errors log it and continue
+            self.database.save_submission(submission)
 
             yield submission
 

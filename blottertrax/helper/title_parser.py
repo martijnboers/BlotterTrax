@@ -45,9 +45,6 @@ class TitleParser:
 
                     break
 
-        if song_title is None:
-            return ParsedSubmission(False, '', '', '', submission.url)
-
         # Remove everything between () and []
         song_title = re.sub(r"\((.*?)\)", "", song_title)
         song_title = re.sub(r"\[(.*?)\]", "", song_title)
