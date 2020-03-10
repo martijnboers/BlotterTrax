@@ -25,6 +25,9 @@ class LastFM:
         """
         Gets the last fm statistics for the artist name and verifies if it exceeds the given thresholds
         """
+        if parsed_submission.success is False:
+            raise ServiceRequiresParsedSubmission()
+
         artist = self.network.get_artist(parsed_submission.artist)
 
         listeners = artist.get_listener_count()
@@ -42,9 +45,6 @@ class LastFM:
         """
         Get the formatted artist reply with appended last.fm data
         """
-        if parsed_submission.success is False:
-            raise ServiceRequiresParsedSubmission
-
         artist = self.network.get_artist(parsed_submission.artist)
 
         listeners = artist.get_listener_count()
