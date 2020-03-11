@@ -26,3 +26,21 @@ tags: {}
 '''
 
 mod_note_exceeding_threshold: str = '{} exceeds {:,}.  Actual: {:,}.'
+
+
+self_promotion: str = '''
+/u/{}, your submission has been removed from /r/listentothis for:
+
+> **Self Promotion/Personal or Professional Association**
+
+We do not allow personal projects to be posted in /r/listentothis.  If you have a personal or professional connection to the artist (e.g. friend or family member or this is a video you directed or produced, etc), we consider this as doing promotional work on the artist's behalf. Please post this in our [weekly music melting pot thread.](http://www.reddit.com/r/listentothis/search?q=self%3Ayes+%22melting+pot%22+-flair%3Amodpost&restrict_sr=on&sort=new&t=week) or on [any of these subreddits](https://www.reddit.com/u/evilnight/m/redditunes) dedicated to Redditor-made music.
+
+___
+
+
+
+___
+
+
+If you have any questions or believe that there has been an error, you may [PM the moderators](http://www.reddit.com/message/compose?to=/r/listentothis&subject=Please review my post). You may also [click here to see our full rule set](https://www.reddit.com/r/listentothis/wiki/rules).
+'''
