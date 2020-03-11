@@ -1,6 +1,6 @@
 
 ## BlotterTrax 
-Reddit bot that uses streaming services to enforce popularity limits on new subreddit submissions.
+Reddit bot that uses streaming services to enforce popularity limits on new subreddit submissions - [see in action](https://www.reddit.com/user/fmfrequencyjammer).
   
 ## Motivation  
 This project started to decrease the amount of popular music shared on [/r/listentothis](https://www.reddit.com/r/listentothis) and hereby encourage the sharing of undiscovered and underappreciated artists. This came to light after [a post](https://www.reddit.com/r/listentothis/comments/ensc7g/discussion_this_subreddit_has_a_major_popularity/) pointing out that recent top submissions are breaking the subreddit's rules.
