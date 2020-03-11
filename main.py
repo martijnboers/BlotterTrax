@@ -5,9 +5,11 @@ import traceback
 import pylast
 from praw import Reddit
 
+from blottertrax.exceptions.empty_description import EmptyDescription
 from blottertrax.helper import templates
 from blottertrax.config import Config
 from blottertrax.database import Database
+from blottertrax.helper.excluded_artists import ExcludedArtists
 from blottertrax.services.lastfm import LastFM
 from blottertrax.services.youtube import Youtube
 from blottertrax.services.soundcloud import Soundcloud
@@ -38,10 +40,41 @@ class BlotterTrax:
             exit('Check if the configuration is set right')
 
     def _run(self):
+        for submission in self._get_submissions():
+            exceeds_threshold = False
+            parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
+
+            if ExcludedArtists.is_excluded(parsed_submission):
+                continue
+
+            for service in self.services:
+                try:
+                    # Some services can run without a successful parsed submission and just need the url
+                    # If this is not the case, it will throw an exception and continue
+                    result = service.get_service_result(parsed_submission)
+
+                    if result.exceeds_threshold is True:
+                        self._perform_exceeds_threshold_mod_action(submission, result)
+                        exceeds_threshold = True
+
+                        break
+
+                except Exception:
+                    # Go ahead and continue execution, don't want to fail completely just because one service failed.
+                    traceback.print_exc(file=sys.stdout)
+                    self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+
+            # Yeey this post probably isn't breaking the rules 🌈
+            try:
+                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False and parsed_submission.success is True:
+                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
+            except (pylast.WSError, EmptyDescription):
+                # Can't find artist or description is empty, logging
+                self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+
+    def _get_submissions(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
             print(submission.title + " - http://reddit.com" + submission.permalink)
-
-            exceeds_threshold = False
 
             if self.database.known_submission(submission) is True:
                 continue
@@ -51,38 +84,10 @@ class BlotterTrax:
                 # We currently don't do anything further with self posts.  Move to the next post.
                 continue
 
-            try:
-                parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
-            except LookupError:
-                # Can't find artist from submission name, skipping
-                self.database.log_error_causing_submission(None, submission, traceback.format_exc(), True)
-                continue
+            # Always save submissions, in case of errors log it and continue
+            self.database.save_submission(submission)
 
-            for service in self.services:
-                try:
-                    result = service.get_service_result(parsed_submission)
-
-                    if result.exceeds_threshold is True:
-                        self._perform_exceeds_threshold_mod_action(submission, result)
-                        exceeds_threshold = True
-
-                        break
-                except Exception:
-                    traceback.print_exc(file=sys.stdout)
-                    self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
-                    # Go ahead and continue execution
-                    # Don't want to fail completely just because one service failed.
-                    pass
-                finally:
-                    self.database.save_submission(submission)
-
-            # Yeey this post probably isn't breaking the rules 🌈
-            try:
-                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
-            except (pylast.WSError, LookupError):
-                # Can't find artist, continue execution
-                continue
+            yield submission
 
     def _perform_exceeds_threshold_mod_action(self, submission, service):
         if self.config.REMOVE_SUBMISSIONS is True:
@@ -95,7 +100,8 @@ class BlotterTrax:
         reply = templates.submission_exceeding_threshold.format(
             submission.author.name, service.service_name, service.threshold, service.listeners_count, submission.id
         )
-        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.  Currently not working?
+        # This is *theoretically* supposed to add a modnote to the removal reason so mods know why.
+        # Currently not working?
         mod_message = templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
                                                                     service.listeners_count)
         submission.mod.remove(False, mod_message)
