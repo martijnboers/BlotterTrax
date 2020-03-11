@@ -8,13 +8,21 @@ class MockedSubmission:
         self.title = title
         self.url = 'https://url.com'
 
+
 class TestBlotterTrax(TestCase):
 
     def test_extract_artist_post_title(self):
         submissions = [
             ('B12 - Infinite Lites (Original Mix) ', 'B12', None, 'infinite lites'),
             ('Floating Points - Last Bloom ', 'Floating Points', None, 'last bloom'),
-            ('Empty Spaces -- Một Cuộc Sống Khác [Vietnamese/Alternative] (2019) ', 'Empty Spaces', None, 'một cuộc sống khác'),
+            ('Floating Points-Last Bloom ', 'Floating Points', None, 'last bloom'),
+            ('Floating Points -- Last Bloom ', 'Floating Points', None, 'last bloom'),
+            ('Floating Points feat. Boombox -- Last Bloom ', 'Floating Points', 'Boombox', 'last bloom'),
+            ('Floating Points --Last Bloom ', 'Floating Points', None, 'last bloom'),
+            ('Floating Points feat. Testing - Last Bloom ', 'Floating Points', 'Testing', 'last bloom'),
+            ('Floating Points   -- Last Bloom ', 'Floating Points', None, 'last bloom'),
+            ('Empty Spaces -- Một Cuộc Sống Khác [Vietnamese/Alternative] (2019) ', 'Empty Spaces', None,
+             'một cuộc sống khác'),
             ('007Bonez featuring Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
             ('007Bonez feat Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
             ('007Bonez feat. Adro - Motion [Hip-Hop / Rap] (2019)', '007Bonez', 'Adro', 'motion'),
