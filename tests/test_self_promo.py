@@ -17,7 +17,7 @@ class TestSelfPromo(TestCase):
         sub = MockedSubmission("testredditor01rocks")
         self.assertTrue(SelfPromoDetector.is_self_promo(parsed, sub))
 
-        parsed = ParsedSubmission(True, 'url', 'testredditor01rocks')
+        parsed = ParsedSubmission(True, 'url', 'testredditor 01rocks')
         sub = MockedSubmission("TestRedditor")
         self.assertTrue(SelfPromoDetector.is_self_promo(parsed, sub))
 
@@ -26,7 +26,7 @@ class TestSelfPromo(TestCase):
         sub = MockedSubmission("testredditor01rocks")
         self.assertTrue(SelfPromoDetector.is_self_promo(parsed, sub))
 
-        parsed = ParsedSubmission(True, 'url', 'NoMatch', 'testredditor01rocks')
+        parsed = ParsedSubmission(True, 'url', 'NoMatch', 'test redditor 01 rocks')
         sub = MockedSubmission("redditor01")
         self.assertTrue(SelfPromoDetector.is_self_promo(parsed, sub))
 
@@ -34,3 +34,12 @@ class TestSelfPromo(TestCase):
         parsed = ParsedSubmission(False, 'url')
         sub = MockedSubmission("testredditor01rocks")
         self.assertFalse(SelfPromoDetector.is_self_promo(parsed, sub))
+
+    def test_it_should_work_with_spaces_and_dashes(self):
+        parsed = ParsedSubmission(True, 'url', 'Test_Red_Ditor')
+        sub = MockedSubmission("Test Redditor")
+        self.assertTrue(SelfPromoDetector.is_self_promo(parsed, sub))
+
+        parsed = ParsedSubmission(True, 'url', 'te_str-edd-itor 01rocks')
+        sub = MockedSubmission("TestRedditor")
+        self.assertTrue(SelfPromoDetector.is_self_promo(parsed, sub))
