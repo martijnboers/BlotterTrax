@@ -35,9 +35,14 @@ class TestSelfPromo(TestCase):
         sub = MockedSubmission("testredditor01rocks")
         self.assertFalse(SelfPromoDetector.is_self_promo(parsed, sub))
 
+    def test_it_should_fail_on_no_match(self):
+        parsed = ParsedSubmission(True, 'url', 'Nedl2dinin')
+        sub = MockedSubmission("Not_Ned l1inin")
+        self.assertFalse(SelfPromoDetector.is_self_promo(parsed, sub))
+
     def test_it_should_work_with_spaces_and_dashes(self):
         parsed = ParsedSubmission(True, 'url', 'Test_Red_Ditor')
-        sub = MockedSubmission("Test Redditor")
+        sub = MockedSubmission("TestRedditor")
         self.assertTrue(SelfPromoDetector.is_self_promo(parsed, sub))
 
         parsed = ParsedSubmission(True, 'url', 'te_str-edd-itor 01rocks')

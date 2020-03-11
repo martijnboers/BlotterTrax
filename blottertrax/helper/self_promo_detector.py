@@ -11,8 +11,6 @@ class SelfPromoDetector:
         poster_name = raw_submission.author.name.lower().replace("_", "").replace("-", "")
         artist_name = parsed_submission.artist.lower().replace(" ", "").replace("_", "").replace("-", "")
 
-        print(artist_name)
-
         # Super simple check.  Ensure the posters name does not appear in the name of the artist or the featured artist.
         # TODO: Add additional checks. https://github.com/martijnboers/BlotterTrax/issues/26
         if artist_name in poster_name:
@@ -23,10 +21,11 @@ class SelfPromoDetector:
 
         if parsed_submission.featuring_artist is not None:
             feature_name = parsed_submission.featuring_artist.lower().replace(" ", "")
-            if feature_name in poster_name:
-                return True
+            if feature_name is not "":
+                if feature_name in poster_name:
+                    return True
 
-            if poster_name in feature_name:
-                return True
+                if poster_name in feature_name:
+                    return True
 
         return False
