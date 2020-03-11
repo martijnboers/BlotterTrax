@@ -21,7 +21,7 @@ class SelfPromoDetector:
 
         if parsed_submission.featuring_artist is not None:
             feature_name = parsed_submission.featuring_artist.lower().replace(" ", "")
-            if feature_name is not "":
+            if feature_name != "":
                 if feature_name in poster_name:
                     return True
 
