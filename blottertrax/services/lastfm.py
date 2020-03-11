@@ -2,6 +2,8 @@ import re
 
 import pylast
 
+from blottertrax.exceptions.empty_description import EmptyDescription
+from blottertrax.exceptions.service_requires_parsed_submission import ServiceRequiresParsedSubmission
 from blottertrax.helper import templates
 from blottertrax.config import Config
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
@@ -23,6 +25,9 @@ class LastFM:
         """
         Gets the last fm statistics for the artist name and verifies if it exceeds the given thresholds
         """
+        if parsed_submission.success is False:
+            raise ServiceRequiresParsedSubmission()
+
         artist = self.network.get_artist(parsed_submission.artist)
 
         listeners = artist.get_listener_count()
@@ -53,7 +58,7 @@ class LastFM:
         description = description.replace("\n", "\n>")
 
         if description == '':
-            raise LookupError
+            raise EmptyDescription()
 
         plays = artist.get_playcount()
         top_tags = artist.get_top_tags(limit=5)

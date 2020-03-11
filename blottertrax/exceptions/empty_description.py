@@ -1,0 +1,2 @@
+class EmptyDescription(Exception):
+    pass
