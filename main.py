@@ -10,6 +10,7 @@ from blottertrax.helper import templates
 from blottertrax.config import Config
 from blottertrax.database import Database
 from blottertrax.helper.excluded_artists import ExcludedArtists
+from blottertrax.helper.self_promo_detector import SelfPromoDetector
 from blottertrax.services.lastfm import LastFM
 from blottertrax.services.youtube import Youtube
 from blottertrax.services.soundcloud import Soundcloud
@@ -47,6 +48,12 @@ class BlotterTrax:
             if ExcludedArtists.is_excluded(parsed_submission):
                 continue
 
+            if SelfPromoDetector.is_self_promo(parsed_submission, submission):
+                reply = templates.self_promotion.format(submission.author.name)
+                submission.mod.remove(False, mod_note="Self promotion")
+                self._reply_with_sticky_post(submission, reply)
+                continue
+
             for service in self.services:
                 try:
                     # Some services can run without a successful parsed submission and just need the url
@@ -79,11 +86,6 @@ class BlotterTrax:
             if self.database.known_submission(submission) is True:
                 continue
 
-            if submission.is_self is True:
-                self.database.save_submission(submission)
-                # We currently don't do anything further with self posts.  Move to the next post.
-                continue
-
             # Always save submissions, in case of errors log it and continue
             self.database.save_submission(submission)
 
@@ -104,7 +106,7 @@ class BlotterTrax:
         # Currently not working?
         mod_message = templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
                                                                     service.listeners_count)
-        submission.mod.remove(False, mod_message)
+        submission.mod.remove(False, mod_note=mod_message)
         self._reply_with_sticky_post(submission, reply)
 
     @staticmethod
