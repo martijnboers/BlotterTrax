@@ -41,7 +41,8 @@ class TestBlotterTrax(TestCase):
              "I GAVE TOM HANKS CORONAVIRUS", None, "i gave tom hanks coronavirus"),
             ("Tucky Buzzard - Tucky Buzzard (Full Album) [psych/rock] 1971", "Tucky Buzzard", None, "tucky buzzard"),
             ("Denny – Insurgents by the Poolside [alt pop / indie] (2019)", "Denny", None, "insurgents by the poolside"),
-            ("Charlie Puth (Feat. James Taylor)- change [pop] (2018)", "Charlie Puth", "James Taylor", "change")
+            ("Charlie Puth (Feat. James Taylor)- change [pop] (2018)", "Charlie Puth", "James Taylor", "change"),
+            ('Floating Points feat. Testing--Last Bloom ', 'Floating Points', 'Testing', 'last bloom')
         ]
         for submission_title, artist, featuring_artist, song_title in submissions:
             title = TitleParser.create_parsed_submission_from_submission(MockedSubmission(submission_title))
