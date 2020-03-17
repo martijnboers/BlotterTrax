@@ -65,7 +65,7 @@ class BlotterTrax:
 
     # Loop through all services and check them to determine if we need to remove the post for exceeding thresholds.
     def _do_service_checks(self, parsed_submission, submission) -> bool:
-        exceeds_threshold = True
+        exceeds_threshold = False
 
         try:
             for service in self.threshold_services:
@@ -78,6 +78,7 @@ class BlotterTrax:
 
                 if result.exceeds_threshold is True:
                     self._perform_exceeds_threshold_mod_action(submission, result)
+                    exceeds_threshold = True
                     break
 
         except Exception:
