@@ -18,7 +18,7 @@ class ParsedSubmission:
 
     def get_final_url(self):
         # we already did the work once, just return the result
-        if self.final_url is not '':
+        if self.final_url != '':
             return self.final_url
 
         # Follow URL to the end location in case of URL shorteners
