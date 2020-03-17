@@ -14,14 +14,6 @@ class TitleParser:
             # On any failures, pass back a ParsedSubmission object with success flag of False
             return ParsedSubmission(False, submission.url)
 
-    # If featuring artist exists, returns featuring artist, else returns main artist.
-    @staticmethod
-    def get_prioritized_artist(parsed_submission):
-        if parsed_submission.featuring_artist is None:
-            return parsed_submission.artist
-
-        return parsed_submission.featuring_artist
-
     # iterate and remove prioritized dash. Second variable denotes whether looking for artist (0) or song (1)
     @staticmethod
     def remove_prioritized_dash(post_title, is_song):
@@ -45,9 +37,6 @@ class TitleParser:
     # Gets artist name from title.
     @classmethod
     def get_artist_name_from_submission_title(cls, post_title):
-        # get main artist
-        artist = None
-
         # let's start with a sample title "a-B (FEAT c) - -- - d [e/f](g)"
         artist = cls.remove_prioritized_dash(post_title, 0)
 
@@ -103,7 +92,7 @@ class TitleParser:
 
         # remove artist
         # "a-b (feat c) - -- - d [e/f](g)" -> " (feat c) - -- - d [e/f](g)"
-        post_title = post_title.rsplit(artist_name[0].lower(), 1)[1]
+        post_title = post_title.split(artist_name[0].lower(), 1)[1]
 
         # remove featuring tag if exists
         for feature in ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']:
