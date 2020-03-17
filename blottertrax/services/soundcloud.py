@@ -31,7 +31,7 @@ class Soundcloud(ThresholdService):
         data = response.json()
 
         return ThresholdServiceResult(data['playback_count'] > self.Threshold, data['playback_count'], self.Threshold,
-                             'Soundcloud plays')
+                                      'Soundcloud plays')
 
     def requires_fully_parsed_submission(self):
         return False
