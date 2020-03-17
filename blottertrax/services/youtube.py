@@ -8,7 +8,7 @@ import googleapiclient.discovery
 import googleapiclient.errors
 
 from blottertrax.config import Config
-from blottertrax.services.base import ThresholdService
+from blottertrax.services.threshold_service import ThresholdService
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
 from blottertrax.value_objects.service_result import ThresholdServiceResult
 
