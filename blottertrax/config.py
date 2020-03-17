@@ -36,7 +36,7 @@ class Config:
             self.LASTFM_SECRET = config.get('LASTFM', 'SECRET')
             self.LASTFM_USERNAME = config.get('LASTFM', 'USERNAME')
             self.LASTFM_PASSWORD = config.get('LASTFM', 'PASSWORD')
-            
+
             self.SOUNDCLOUD_KEY = config.get('SOUNDCLOUD', 'KEY')
 
         except Exception:
