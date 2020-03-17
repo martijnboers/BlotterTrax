@@ -67,8 +67,8 @@ class BlotterTrax:
     def _do_service_checks(self, parsed_submission, submission) -> bool:
         exceeds_threshold = False
 
-        try:
-            for service in self.threshold_services:
+        for service in self.threshold_services:
+            try:
                 # Some services can run without a successful parsed submission and just need the url
                 # If this is not the case, lets skip it now.
                 if service.requires_fully_parsed_submission() and not parsed_submission.success:
@@ -81,12 +81,12 @@ class BlotterTrax:
                     exceeds_threshold = True
                     break
 
-        except Exception:
-            # Go ahead and continue execution, don't want to fail completely just because one service failed.
-            traceback.print_exc(file=sys.stdout)
-            self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
-        finally:
-            return exceeds_threshold
+            except Exception:
+                # Go ahead and continue execution, don't want to fail completely just because one service failed.
+                traceback.print_exc(file=sys.stdout)
+                self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+
+        return exceeds_threshold
 
     def _get_submissions(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
