@@ -6,11 +6,12 @@ from blottertrax.exceptions.empty_description import EmptyDescription
 from blottertrax.exceptions.service_requires_parsed_submission import ServiceRequiresParsedSubmission
 from blottertrax.helper import templates
 from blottertrax.config import Config
+from blottertrax.services.base import ThresholdService
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
-from blottertrax.value_objects.service_result import ServiceResult
+from blottertrax.value_objects.service_result import ThresholdServiceResult
 
 
-class LastFM:
+class LastFM(ThresholdService):
     network = None
     config: Config = Config()
     threshold_scrobbles = 4_000_000
@@ -21,7 +22,7 @@ class LastFM:
                                             username=self.config.LASTFM_USERNAME,
                                             password_hash=pylast.md5(self.config.LASTFM_PASSWORD))
 
-    def get_service_result(self, parsed_submission: ParsedSubmission) -> ServiceResult:
+    def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         """
         Gets the last fm statistics for the artist name and verifies if it exceeds the given thresholds
         """
@@ -34,12 +35,12 @@ class LastFM:
         scrobbles = artist.get_playcount()
 
         if listeners > self.threshold_listeners:
-            return ServiceResult(True, listeners, self.threshold_listeners, 'Last.fm listeners')
+            return ThresholdServiceResult(True, listeners, self.threshold_listeners, 'Last.fm listeners')
 
         if scrobbles > self.threshold_scrobbles:
-            return ServiceResult(True, scrobbles, self.threshold_scrobbles, 'Last.fm artist scrobbles')
+            return ThresholdServiceResult(True, scrobbles, self.threshold_scrobbles, 'Last.fm artist scrobbles')
 
-        return ServiceResult(False, scrobbles, 0, '')
+        return ThresholdServiceResult(False, scrobbles, 0, '')
 
     def get_artist_reply(self, parsed_submission: ParsedSubmission) -> str:
         """
@@ -69,3 +70,6 @@ class LastFM:
         return templates.reply_with_last_fm_info.format(
             parsed_submission.artist, description, last_fm_url, listeners, plays, tag_string
         )
+
+    def requires_fully_parsed_submission(self):
+        return True

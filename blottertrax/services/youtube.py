@@ -8,13 +8,14 @@ import googleapiclient.discovery
 import googleapiclient.errors
 
 from blottertrax.config import Config
+from blottertrax.services.base import ThresholdService
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
-from blottertrax.value_objects.service_result import ServiceResult
+from blottertrax.value_objects.service_result import ThresholdServiceResult
 
 scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
 
 
-class Youtube:
+class Youtube(ThresholdService):
     config: Config = Config()
     youtubeClient = None
     threshold = 500_000
@@ -27,7 +28,7 @@ class Youtube:
         self.youtubeClient = googleapiclient.discovery.build(
             api_service_name, api_version, developerKey=self.config.YT_KEY)
 
-    def get_service_result(self, parsed_submission: ParsedSubmission) -> ServiceResult:
+    def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         """
         Get the v query from the url and use it to query for Youtube review statistics
         """
@@ -39,7 +40,7 @@ class Youtube:
         final_url = urlparse(resp.url)
 
         if final_url.netloc not in self.youtubeUrls:
-            return ServiceResult(False, 0, 0, '')
+            return ThresholdServiceResult(False, 0, 0, '')
 
         query = parse.parse_qs(parse.urlsplit(final_url.geturl()).query)
 
@@ -50,4 +51,7 @@ class Youtube:
         response = request.execute()
         view_count = int(response['items'][0]['statistics']['viewCount'])
 
-        return ServiceResult(view_count > self.threshold, view_count, self.threshold, 'YouTube plays')
+        return ThresholdServiceResult(view_count > self.threshold, view_count, self.threshold, 'YouTube plays')
+
+    def requires_fully_parsed_submission(self):
+        return False

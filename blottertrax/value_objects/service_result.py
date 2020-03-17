@@ -1,4 +1,4 @@
-class ServiceResult:
+class ThresholdServiceResult:
     exceeds_threshold: bool
     listeners_count: int
     threshold: int
