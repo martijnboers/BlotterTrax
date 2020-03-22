@@ -1,3 +1,5 @@
+# flake8: noqa
+
 submission_exceeding_threshold: str = '''
 Our apologies /u/{} but your post has been automatically removed because the artist has too many {}. The maximum is {:,} and this link has {:,}.
 If you think this is in error, please [contact the mods](https://www.reddit.com/message/compose?to=/r/listentothis&subject=Post removed in error.&message=https://redd.it/{}). 

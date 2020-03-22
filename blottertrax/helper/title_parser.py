@@ -14,14 +14,6 @@ class TitleParser:
             # On any failures, pass back a ParsedSubmission object with success flag of False
             return ParsedSubmission(False, submission.url)
 
-    # If featuring artist exists, returns featuring artist, else returns main artist.
-    @staticmethod
-    def get_prioritized_artist(parsed_submission):
-        if parsed_submission.featuring_artist is None:
-            return parsed_submission.artist
-
-        return parsed_submission.featuring_artist
-
     # iterate and remove prioritized dash. Second variable denotes whether looking for artist (0) or song (1)
     @staticmethod
     def remove_prioritized_dash(post_title, is_song):
@@ -45,9 +37,6 @@ class TitleParser:
     # Gets artist name from title.
     @classmethod
     def get_artist_name_from_submission_title(cls, post_title):
-        # get main artist
-        artist = None
-
         # let's start with a sample title "a-B (FEAT c) - -- - d [e/f](g)"
         artist = cls.remove_prioritized_dash(post_title, 0)
 
@@ -62,19 +51,24 @@ class TitleParser:
             # we don't want to actually get the lowercase artist names, so we get the index.
             feat_index = lower_title.index(feature)
 
-            # remove featuring from artist if exists (do nothing if featuring is in song side)
+            # remove featuring from artist if exists
+            # featuring string defined next to artist
             if len(artist) > feat_index:
+                feature_artist = artist[feat_index+len(feature):].strip()
                 artist = artist[:feat_index].strip()  # Removes all after feat_index and strips, artist = "a-B"
+
                 # remove potential trailing parenthesis, mostly precaution
                 if artist[len(artist) - 1] == '(':
                     artist = artist.rsplit('(', 1)[0].strip()
+            # featuring string defined next to song name
+            else:
+                # add the length of the actual feature comparison string so we can split after it.
+                feat_index += len(feature)
+                # isolate featuring artist
+                # removes all before feat_index and strips, feature_artist = "c) - -- - d [e/f](g)"
+                feature_artist = post_title[feat_index:].strip()
 
-            # add the length of the actual feature comparison string so we can split after it.
-            feat_index += len(feature)
 
-            # isolate featuring artist
-            # removes all before feat_index and strips, feature_artist = "c) - -- - d [e/f](g)"
-            feature_artist = post_title[feat_index:].strip()
             break
 
         # find various trailing characters to trim down featuring artist
@@ -103,7 +97,7 @@ class TitleParser:
 
         # remove artist
         # "a-b (feat c) - -- - d [e/f](g)" -> " (feat c) - -- - d [e/f](g)"
-        post_title = post_title.rsplit(artist_name[0].lower(), 1)[1]
+        post_title = post_title.split(artist_name[0].lower(), 1)[1]
 
         # remove featuring tag if exists
         for feature in ['feat.', 'ft.', 'feature', 'featuring', ' feat ', '(feat ']:
