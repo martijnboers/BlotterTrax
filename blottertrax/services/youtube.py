@@ -1,7 +1,6 @@
 from typing import List
 from urllib import parse
 
-import requests
 from urllib.parse import urlparse
 
 import googleapiclient.discovery
@@ -32,12 +31,7 @@ class Youtube(ThresholdService):
         """
         Get the v query from the url and use it to query for Youtube review statistics
         """
-
-        # Follow URL to the end location in case of URL shorteners
-        session = requests.Session()  # so connections are recycled
-        resp = session.head(parsed_submission.url, allow_redirects=True)
-
-        final_url = urlparse(resp.url)
+        final_url = urlparse(parsed_submission.get_final_url())
 
         if final_url.netloc not in self.youtubeUrls:
             return ThresholdServiceResult(False, 0, 0, '')
