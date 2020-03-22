@@ -1,6 +1,7 @@
 import requests
 
 from blottertrax.config import Config
+from blottertrax.helper.array_util import ArrayUtil
 from blottertrax.services.threshold_service import ThresholdService
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
 from blottertrax.value_objects.service_result import ThresholdServiceResult
@@ -9,7 +10,7 @@ from blottertrax.value_objects.service_result import ThresholdServiceResult
 class Soundcloud(ThresholdService):
     config: Config = Config()
     Threshold = 500000
-    
+
     def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         url = parsed_submission.get_final_url()
         if 'soundcloud.com' not in url:
@@ -23,6 +24,9 @@ class Soundcloud(ThresholdService):
             return ThresholdServiceResult(False, 0, 0, '')
 
         data = response.json()
+
+        if ArrayUtil.safe_list_get(data, False, 'playback_count') is False:
+            return ThresholdServiceResult(False, 0, 0, '')
 
         return ThresholdServiceResult(data['playback_count'] > self.Threshold, data['playback_count'], self.Threshold,
                                       'Soundcloud plays')

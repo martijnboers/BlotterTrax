@@ -2,27 +2,28 @@ import sys
 import time
 import traceback
 
-import pylast
 from praw import Reddit
 
-from blottertrax.exceptions.empty_description import EmptyDescription
-from blottertrax.helper import templates
 from blottertrax.config import Config
 from blottertrax.database import Database
+from blottertrax.description_provider import DescriptionProvider
+from blottertrax.exceptions.description_exception import DescriptionException
+from blottertrax.helper import templates
 from blottertrax.helper.excluded_artists import ExcludedArtists
 from blottertrax.helper.self_promo_detector import SelfPromoDetector
-from blottertrax.services.lastfm import LastFM
-from blottertrax.services.youtube import Youtube
-from blottertrax.services.soundcloud import Soundcloud
 from blottertrax.helper.title_parser import TitleParser
+from blottertrax.services.lastfm import LastFM
+from blottertrax.services.soundcloud import Soundcloud
+from blottertrax.services.youtube import Youtube
 
 
 class BlotterTrax:
+    useragent: str = 'BlotterTrax /r/listentothis submission bot'
     reddit: Reddit = None
-    useragent: str = 'BlotterTrax /r/listentothis submission bot by /u/plebianlinux'
     config: Config = None
     last_fm: LastFM = None
     database: Database = None
+    description_provider: DescriptionProvider = None
     crash_timeout: int = 10
     threshold_services: list = None
 
@@ -31,6 +32,7 @@ class BlotterTrax:
             self.config = Config()
             self.last_fm = LastFM()
             self.database = Database()
+            self.description_provider = DescriptionProvider()
             self.threshold_services = [Youtube(), Soundcloud(), self.last_fm]
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
@@ -55,16 +57,19 @@ class BlotterTrax:
 
             exceeds_threshold = self._do_service_checks(parsed_submission, submission)
 
-            # Yeey this post probably isn't breaking the rules 🌈
             try:
-                if self.config.SEND_ARTIST_REPLY is True and exceeds_threshold is False and parsed_submission.success is True:
-                    self._reply_with_sticky_post(submission, self.last_fm.get_artist_reply(parsed_submission))
-            except (pylast.WSError, EmptyDescription):
-                # Can't find artist or description is empty, logging
-                self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+                if exceeds_threshold is False and parsed_submission.success is True:
+                    # Yeey this post probably isn't breaking the rules 🌈
+                    self._reply_with_sticky_post(submission, self.description_provider.get_reply(parsed_submission))
+            except DescriptionException:
+                # Can't find recording on Musicbrainz, skipping
+                # traceback.print_exc(file=sys.stdout)
+                pass
 
-    # Loop through all services and check them to determine if we need to remove the post for exceeding thresholds.
     def _do_service_checks(self, parsed_submission, submission) -> bool:
+        """
+        Loop through all services and check them to determine if we need to remove the post for exceeding thresholds.
+        """
         exceeds_threshold = False
 
         for service in self.threshold_services:
