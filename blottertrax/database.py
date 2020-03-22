@@ -19,12 +19,12 @@ class Database:
         self.cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS errorCausingSubmissions(
-                id TEXT NOT NULL, 
-                permalink TEXT, 
-                url TEXT, 
-                postTitle TEXT, 
-                artist TEXT, 
-                songTitle TEXT, 
+                id TEXT NOT NULL,
+                permalink TEXT,
+                url TEXT,
+                postTitle TEXT,
+                artist TEXT,
+                songTitle TEXT,
                 error TEXT
             )
             '''

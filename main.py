@@ -24,14 +24,14 @@ class BlotterTrax:
     last_fm: LastFM = None
     database: Database = None
     crash_timeout: int = 10
-    services: list = None
+    threshold_services: list = None
 
     def __init__(self):
         try:
             self.config = Config()
             self.last_fm = LastFM()
             self.database = Database()
-            self.services = [Youtube(), Soundcloud(), self.last_fm]
+            self.threshold_services = [Youtube(), Soundcloud(), self.last_fm]
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.useragent,
@@ -42,7 +42,6 @@ class BlotterTrax:
 
     def _run(self):
         for submission in self._get_submissions():
-            exceeds_threshold = False
             parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
 
             if ExcludedArtists.is_excluded(parsed_submission):
@@ -54,22 +53,7 @@ class BlotterTrax:
                 self._reply_with_sticky_post(submission, reply)
                 continue
 
-            for service in self.services:
-                try:
-                    # Some services can run without a successful parsed submission and just need the url
-                    # If this is not the case, it will throw an exception and continue
-                    result = service.get_service_result(parsed_submission)
-
-                    if result.exceeds_threshold is True:
-                        self._perform_exceeds_threshold_mod_action(submission, result)
-                        exceeds_threshold = True
-
-                        break
-
-                except Exception:
-                    # Go ahead and continue execution, don't want to fail completely just because one service failed.
-                    traceback.print_exc(file=sys.stdout)
-                    self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+            exceeds_threshold = self._do_service_checks(parsed_submission, submission)
 
             # Yeey this post probably isn't breaking the rules 🌈
             try:
@@ -78,6 +62,31 @@ class BlotterTrax:
             except (pylast.WSError, EmptyDescription):
                 # Can't find artist or description is empty, logging
                 self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+
+    # Loop through all services and check them to determine if we need to remove the post for exceeding thresholds.
+    def _do_service_checks(self, parsed_submission, submission) -> bool:
+        exceeds_threshold = False
+
+        for service in self.threshold_services:
+            try:
+                # Some services can run without a successful parsed submission and just need the url
+                # If this is not the case, lets skip it now.
+                if service.requires_fully_parsed_submission() and not parsed_submission.success:
+                    continue
+
+                result = service.get_service_result(parsed_submission)
+
+                if result.exceeds_threshold is True:
+                    self._perform_exceeds_threshold_mod_action(submission, result)
+                    exceeds_threshold = True
+                    break
+
+            except Exception:
+                # Go ahead and continue execution, don't want to fail completely just because one service failed.
+                traceback.print_exc(file=sys.stdout)
+                self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+
+        return exceeds_threshold
 
     def _get_submissions(self):
         for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
