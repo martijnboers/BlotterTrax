@@ -1,2 +1,0 @@
-class EmptyDescription(Exception):
-    pass

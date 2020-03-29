@@ -14,8 +14,9 @@ class Config:
     LASTFM_PASSWORD: str = ''
     SUBREDDIT: str = ''
     REMOVE_SUBMISSIONS: bool = False
-    SEND_ARTIST_REPLY: bool = False
     SOUNDCLOUD_KEY: str = ''
+    MUSICBRAINZ_USER: str = ''
+    MUSICBRAINZ_PASSWORD: str = ''
 
     def __init__(self):
         config = configparser.ConfigParser(strict=False, interpolation=None)
@@ -28,7 +29,6 @@ class Config:
             self.USER_NAME = config.get('REDDIT', 'USER_NAME')
             self.SUBREDDIT = config.get('REDDIT', 'SUBREDDIT')
             self.REMOVE_SUBMISSIONS = config.getboolean('REDDIT', 'REMOVE_SUBMISSIONS')
-            self.SEND_ARTIST_REPLY = config.getboolean('REDDIT', 'SEND_ARTIST_REPLY')
 
             self.YT_KEY = config.get('YOUTUBE', 'KEY')
 
@@ -38,6 +38,9 @@ class Config:
             self.LASTFM_PASSWORD = config.get('LASTFM', 'PASSWORD')
 
             self.SOUNDCLOUD_KEY = config.get('SOUNDCLOUD', 'KEY')
+
+            self.MUSICBRAINZ_USER = config.get('MUSICBRAINZ', 'USER')
+            self.MUSICBRAINZ_PASSWORD = config.get('MUSICBRAINZ', 'PASSWORD')
 
         except Exception:
             exit("Please make sure conf/config.ini is set")

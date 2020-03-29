@@ -1,11 +1,7 @@
-import re
-
 import pylast
 
-from blottertrax.exceptions.empty_description import EmptyDescription
-from blottertrax.exceptions.service_requires_parsed_submission import ServiceRequiresParsedSubmission
-from blottertrax.helper import templates
 from blottertrax.config import Config
+from blottertrax.exceptions.service_requires_parsed_submission import ServiceRequiresParsedSubmission
 from blottertrax.services.threshold_service import ThresholdService
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
 from blottertrax.value_objects.service_result import ThresholdServiceResult
@@ -41,35 +37,6 @@ class LastFM(ThresholdService):
             return ThresholdServiceResult(True, scrobbles, self.threshold_scrobbles, 'Last.fm artist scrobbles')
 
         return ThresholdServiceResult(False, scrobbles, 0, '')
-
-    def get_artist_reply(self, parsed_submission: ParsedSubmission) -> str:
-        """
-        Get the formatted artist reply with appended last.fm data
-        """
-        artist = self.network.get_artist(parsed_submission.artist)
-
-        listeners = artist.get_listener_count()
-
-        description = str(artist.get_bio_summary())
-
-        # Strip out last.fm link from description
-        description = re.sub(r'<a href="https://www\.last\.fm/.*">Read more on Last\.fm</a>', '', description)
-
-        # Fix formatting for linebreaks
-        description = description.replace("\n", "\n>")
-
-        if description == '':
-            raise EmptyDescription()
-
-        plays = artist.get_playcount()
-        top_tags = artist.get_top_tags(limit=5)
-        last_fm_url = artist.get_url()
-
-        tag_string = ', '.join(map(lambda t: t.item.get_name(), top_tags))
-
-        return templates.reply_with_last_fm_info.format(
-            parsed_submission.artist, description, last_fm_url, listeners, plays, tag_string
-        )
 
     def requires_fully_parsed_submission(self):
         return True

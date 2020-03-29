@@ -6,7 +6,7 @@ If you think this is in error, please [contact the mods](https://www.reddit.com/
 
 If you're new to the subreddit, please [read the full subreddit rules](https://www.reddit.com/r/listentothis/wiki/rules).
 
-_Don't blame me, I'm just a bot_ | [_Bugs & Code_](https://github.com/martijnboers/BlotterTrax)
+^^Don't ^^blame ^^me, ^^I'm ^^just ^^a ^^bot! [ ^^bugs&code ](https://github.com/martijnboers/BlotterTrax)
 '''
 
 submission_repost: str = '''
@@ -17,18 +17,19 @@ This post has been removed due to the artist having been posted too recently. No
 A full explanation of this rule can be found [here](https://www.reddit.com/r/listentothis/wiki/rules).
 '''
 
-reply_with_last_fm_info: str = '''
-**{}**
+musicbrainz_artist_info: str = '''
+**{}** {}
+___
 
-> {}
+- album: {} ({})
+- tags: {}
+- socials: {}
 
-[last.fm]({}): {:,} listeners, {:,} plays
-
-tags: {}
+^^Displaying ^^incorrect ^^data? ^^Submit ^^a [^^correction ](https://musicbrainz.org/artist/{})  
+^^For ^^reporting ^^bugs ^^or ^^other ^^questions [ ^^click·here ](https://github.com/martijnboers/BlotterTrax)
 '''
 
 mod_note_exceeding_threshold: str = '{} exceeds {:,}.  Actual: {:,}.'
-
 
 self_promotion: str = '''
 /u/{}, your submission has been removed from /r/listentothis for:
