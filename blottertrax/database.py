@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 
@@ -6,7 +7,7 @@ class Database:
     sql = None
 
     def __init__(self):
-        self.sql = sqlite3.connect('{}/../database/submissions.db')
+        self.sql = sqlite3.connect('{}/../database/submissions.db'.format(os.path.dirname(os.path.realpath(__file__))))
         self.cursor = self.sql.cursor()
 
         self.cursor.execute('CREATE TABLE IF NOT EXISTS submissions(id TEXT)')
