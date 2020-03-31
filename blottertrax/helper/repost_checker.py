@@ -54,3 +54,9 @@ class RepostChecker:
     def add_count(self, artist_name):
         self.cursor.execute('UPDATE artistSubmission SET repeatCount = repeatCount + 1 WHERE artist == ?', [artist_name])
         self.sql.commit()
+    
+    @classmethod
+    def delete_old_entries(self, time_threshold):        
+        self.cursor.execute('DELETE FROM songSubmission WHERE postTime < ?', [time_threshold])
+        self.sql.commit()
+    
