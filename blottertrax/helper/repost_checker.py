@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 
 class RepostChecker:
@@ -7,12 +8,15 @@ class RepostChecker:
 
     @classmethod
     def __init__(self):
-        self.sql = sqlite3.connect('{}/../{}/../database/repost.db')
+        print("a")
+        self.sql = sqlite3.connect('{}/../database/repost.db'.format(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
         self.cursor = self.sql.cursor()
+        print("b")
     
         self.cursor.execute('CREATE TABLE IF NOT EXISTS artistSubmission(artist TEXT UNIQUE NOT NULL, postTime REAL NOT NULL, repeatCount INT NOT NULL)')
         self.cursor.execute('CREATE TABLE IF NOT EXISTS songSubmission(artistSong TEXT UNIQUE NOT NULL, postTime REAL NOT NULL)')
         self.cursor.execute('CREATE TABLE IF NOT EXISTS idStamped(postID TEXT UNIQUE NOT NULL, postTime REAL NOT NULL)')
+        print("f")
     
     @classmethod
     def new_entry(self, artist_name, song_name, curr_time, post_id):
