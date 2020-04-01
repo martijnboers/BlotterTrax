@@ -51,6 +51,7 @@ class DescriptionProvider:
                     for domain in social_network:
                         if domain in cur_item[1]:
                             cur_item[0] = '[' + domain.split('.')[0]
+                            break
                 socials[i] = ']'.join(cur_item)
             socials = ', '.join(socials)
                     
