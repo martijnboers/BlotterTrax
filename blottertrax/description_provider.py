@@ -43,11 +43,11 @@ class DescriptionProvider:
         tags = ', '.join(map(lambda t: t['name'], artist['tag-list'][:5])) if has_tags else 'none'
         socials = map(lambda u: '[{}]({})'.format(u['type'], '\)'.join(u['target'].split(')'))),
                                 artist['url-relation-list']) if has_socials else 'none'
-        if socials is not 'none':
+        if socials != 'none':
             social_network = ["twitter.com", "facebook.com", "instagram.com"]
             for i in range(len(socials)):
                 cur_item = socials[i].split(']')
-                if(cur_item[0] is '[social network'):
+                if cur_item[0] == '[social network':
                     for domain in social_network:
                         if domain in cur_item[1]:
                             cur_item[0] = '[' + domain.split('.')[0]
