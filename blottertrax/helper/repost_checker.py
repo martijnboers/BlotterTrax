@@ -62,5 +62,6 @@ class RepostChecker:
     @classmethod
     def delete_old_entries(self, time_threshold):        
         self.cursor.execute('DELETE FROM songSubmission WHERE postTime < ?', [time_threshold])
+        self.cursor.execute('DELETE FROM artistSubmission WHERE postTime < ? AND repeatCount = 0', [time_threshold])
         self.sql.commit()
     
