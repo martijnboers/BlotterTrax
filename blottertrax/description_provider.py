@@ -41,19 +41,8 @@ class DescriptionProvider:
 
         life_span = '' if has_life_span is False else '({} to {})'.format(life_span_begin, life_span_end)
         tags = ', '.join(map(lambda t: t['name'], artist['tag-list'][:5])) if has_tags else 'none'
-        socials = map(lambda u: '[{}]({})'.format(u['type'], '\)'.join(u['target'].split(')'))),
-                                artist['url-relation-list']) if has_socials else 'none'
-        if socials != 'none':
-            social_network = ["twitter.com", "facebook.com", "instagram.com"]
-            for i in range(len(socials)):
-                cur_item = socials[i].split(']')
-                if cur_item[0] == '[social network':
-                    for domain in social_network:
-                        if domain in cur_item[1]:
-                            cur_item[0] = '[' + domain.split('.')[0]
-                            break
-                socials[i] = ']'.join(cur_item)
-            socials = ', '.join(socials)
+        socials = ", ".join(map(format_network_to_friendly_name,
+                                artist['url-relation-list'])) if has_socials else 'none'
                     
 
         return templates.musicbrainz_artist_info.strip().format(
@@ -70,3 +59,15 @@ class DescriptionProvider:
         return self.musicbrainz.get_artist_by_id(
             id=artist_id, includes=['tags', 'ratings', 'annotation', 'url-rels', 'user-tags']
         )['artist']
+    
+    @classmethod
+    def format_network_to_friendly_name(cls, info) -> str:
+        social_network = ["twitter.com", "facebook.com", "instagram.com"]
+        target = info['target']
+        link_type = info['type']
+        if link_type == 'social network':
+            for domain in social_network:
+                if domain in target:
+                    link_type = domain.split(".")[0]
+                    break
+        return '[{}]({})'.format(link_type, '\)'.join(target.split(')'))
