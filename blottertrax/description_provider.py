@@ -69,4 +69,4 @@ class DescriptionProvider:
                 if domain in target:
                     link_type = domain.split('.')[0]
                     break
-        return '[{}]({})'.format(link_type, '\)'.join(target.split(')'))
+        return '[{}]({})'.format(link_type, '\)'.join(target.split(')')))
