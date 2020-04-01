@@ -60,8 +60,7 @@ class DescriptionProvider:
             id=artist_id, includes=['tags', 'ratings', 'annotation', 'url-rels', 'user-tags']
         )['artist']
     
-    @classmethod
-    def format_network_to_friendly_name(cls, info) -> str:
+    def format_network_to_friendly_name(self, info) -> str:
         social_network = ["twitter.com", "facebook.com", "instagram.com"]
         target = info['target']
         link_type = info['type']
