@@ -21,7 +21,7 @@ musicbrainz_artist_info: str = '''
 **{}** {}
 ___
 
-- album: {} ({})
+- album: {} {}
 - tags: {}
 - socials: {}
 
