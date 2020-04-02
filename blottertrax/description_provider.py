@@ -30,6 +30,7 @@ class DescriptionProvider:
         recording = result['recording-list'][0]
         artist = self._get_artist_by_id(recording.get('artist-credit')[0]['artist']['id'])
 
+        album_release_date = ArrayUtil.safe_list_get(recording, False, 'release-list', 0, 'date')
         life_span_begin = ArrayUtil.safe_list_get(artist, '?', 'life-span', 'begin')
         life_span_end = ArrayUtil.safe_list_get(artist, 'now', 'life-span', 'end')
         has_life_span = (life_span_end != 'now' or life_span_begin != '?')
@@ -39,6 +40,7 @@ class DescriptionProvider:
         if has_tags is False and has_socials is False:
             raise DescriptionException('Neither tags nor socials found, skipping')
 
+        album_release_date = '' if album_release_date is False else '({})'.format(album_release_date)
         life_span = '' if has_life_span is False else '({} to {})'.format(life_span_begin, life_span_end)
         tags = ', '.join(map(lambda t: t['name'], artist['tag-list'][:5])) if has_tags else 'none'
         socials = ', '.join(map(lambda u: '[{}]({})'.format(u['type'], u['target']),
@@ -48,7 +50,7 @@ class DescriptionProvider:
             artist['name'],
             life_span,
             recording['title'],
-            recording['release-list'][0]['date'],
+            album_release_date,
             tags,
             socials,
             artist['id']
