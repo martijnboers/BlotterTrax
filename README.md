@@ -33,7 +33,12 @@ And that's it! If it doesn't work you can create an issue
   
 ## How to use?  
 Please set the `SUBREDDIT` in `conf/config.ini` to select the desired subreddit to moderate. This only works when the Reddit account is moderator of the selected subreddit
-  
+
+## Features
+- [x] Using Youtube, Last.fm and Soundcloud for detecting submissions with exceeding listen count
+- [x] Report self-promotion posts using username and submission title
+- [x] Post artist tags, album information and social media links using Musicbrainz
+
 ## Contribute  
   
 If you have features or bugfixes don't be shy to create a pull requests or bug report!

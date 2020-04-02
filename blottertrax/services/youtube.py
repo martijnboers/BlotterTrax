@@ -1,6 +1,5 @@
 from typing import List
 from urllib import parse
-
 from urllib.parse import urlparse
 
 import googleapiclient.discovery
@@ -10,8 +9,6 @@ from blottertrax.config import Config
 from blottertrax.services.threshold_service import ThresholdService
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
 from blottertrax.value_objects.service_result import ThresholdServiceResult
-
-scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
 
 
 class Youtube(ThresholdService):
