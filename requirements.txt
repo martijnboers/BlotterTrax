@@ -1,4 +1,4 @@
-praw===6.5.1
+praw===7.0.0
 google-api-python-client===1.8.2
 pylast===3.2.1
 musicbrainzngs===0.7.1
