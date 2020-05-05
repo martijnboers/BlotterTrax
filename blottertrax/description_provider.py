@@ -30,6 +30,7 @@ class DescriptionProvider:
         recording = result['recording-list'][0]
         artist = self._get_artist_by_id(recording.get('artist-credit')[0]['artist']['id'])
 
+        album_title = ArrayUtil.safe_list_get(recording, recording['title'], 'release-list', 0, 'title')
         album_release_date = ArrayUtil.safe_list_get(recording, False, 'release-list', 0, 'date')
         life_span_begin = ArrayUtil.safe_list_get(artist, '?', 'life-span', 'begin')
         life_span_end = ArrayUtil.safe_list_get(artist, 'now', 'life-span', 'end')
@@ -49,7 +50,7 @@ class DescriptionProvider:
         return templates.musicbrainz_artist_info.strip().format(
             artist['name'],
             life_span,
-            recording['title'],
+            album_title,
             album_release_date,
             tags,
             socials,
