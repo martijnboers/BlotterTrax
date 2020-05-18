@@ -9,7 +9,7 @@ from blottertrax.value_objects.service_result import ThresholdServiceResult
 
 class Soundcloud(ThresholdService):
     config: Config = Config()
-    Threshold = 500000
+    Threshold = 1_000_000
 
     def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         url = parsed_submission.get_final_url()

@@ -14,7 +14,7 @@ from blottertrax.value_objects.service_result import ThresholdServiceResult
 class Youtube(ThresholdService):
     config: Config = Config()
     youtubeClient = None
-    threshold = 500_000
+    threshold = 1_000_000
     youtubeUrls: List[str] = ['youtube.com', 'youtube.be', 'www.youtube.com', 'youtu.be']
 
     def __init__(self):
