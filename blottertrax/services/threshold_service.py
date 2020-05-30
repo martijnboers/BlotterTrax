@@ -1,3 +1,5 @@
+from datetime import date
+
 from blottertrax.value_objects.parsed_submission import ParsedSubmission
 from blottertrax.value_objects.service_result import ThresholdServiceResult
 from abc import ABC, abstractmethod
@@ -11,3 +13,7 @@ class ThresholdService(ABC):
     @abstractmethod
     def requires_fully_parsed_submission(self):
         pass
+
+    @staticmethod
+    def is_cheat_day():
+        return date.today().weekday() == 0
