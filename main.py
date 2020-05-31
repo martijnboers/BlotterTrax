@@ -28,8 +28,6 @@ class BlotterTrax:
     crash_timeout: int = 10
     threshold_services: list = None
 
-    total_listens_limit: int = 1_000_000
-
     def __init__(self):
         try:
             self.config = Config()
