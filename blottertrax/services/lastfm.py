@@ -11,7 +11,7 @@ class LastFM(ThresholdService):
     network = None
     config: Config = Config()
     threshold_scrobbles = 4_000_000
-    threshold_listeners = 250_000
+    threshold_listeners = 500_000
 
     def __init__(self):
         self.network = pylast.LastFMNetwork(api_key=self.config.LASTFM_KEY, api_secret=self.config.LASTFM_SECRET,

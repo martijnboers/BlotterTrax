@@ -13,6 +13,7 @@ from blottertrax.helper.excluded_artists import ExcludedArtists
 from blottertrax.helper.self_promo_detector import SelfPromoDetector
 from blottertrax.helper.title_parser import TitleParser
 from blottertrax.services.lastfm import LastFM
+from blottertrax.services.overall_threshold_service import OverallThresholdService
 from blottertrax.services.soundcloud import Soundcloud
 from blottertrax.services.youtube import Youtube
 
@@ -71,6 +72,7 @@ class BlotterTrax:
         Loop through all services and check them to determine if we need to remove the post for exceeding thresholds.
         """
         exceeds_threshold = False
+        overall_threshold_service = OverallThresholdService()
 
         for service in self.threshold_services:
             try:
@@ -85,11 +87,20 @@ class BlotterTrax:
                     self._perform_exceeds_threshold_mod_action(submission, result)
                     exceeds_threshold = True
                     break
+                else:
+                    overall_threshold_service.add_service_result(result)
 
             except Exception:
                 # Go ahead and continue execution, don't want to fail completely just because one service failed.
                 traceback.print_exc(file=sys.stdout)
                 self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
+
+        # TODO: Enable this when new rules roll out.
+        # # If none of the other checkers exceeded the threshold, check all the combined listeners.
+        # if not exceeds_threshold:
+        #     result = overall_threshold_service.get_service_result()
+        #     if result.exceeds_threshold:
+        #         self._perform_exceeds_threshold_mod_action(submission, result)
 
         return exceeds_threshold
 
