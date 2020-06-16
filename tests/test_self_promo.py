@@ -51,5 +51,5 @@ class TestSelfPromo(TestCase):
 
     def test_it_should_fail_on_short_user_names(self):
         parsed = ParsedSubmission(True, 'url', 'Test_Red_Ditor')
-        sub = MockedSubmission("-------___e____") # Evals to just "e" inside detector
+        sub = MockedSubmission("-------___e____")  # Evals to just "e" inside detector
         self.assertFalse(SelfPromoDetector.is_self_promo(parsed, sub))

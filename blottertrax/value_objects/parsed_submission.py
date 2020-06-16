@@ -26,4 +26,3 @@ class ParsedSubmission:
         resp = session.head(self.url, allow_redirects=True)
         self.final_url = resp.url
         return self.final_url
-
