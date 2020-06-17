@@ -88,4 +88,3 @@ class DescriptionProvider:
                     link_type = domain.split('.')[0]
                     break
         return '[{}]({})'.format(link_type, target)
-
