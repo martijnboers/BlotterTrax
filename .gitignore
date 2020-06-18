@@ -2,4 +2,5 @@ env
 conf/config.ini
 __pycache__
 .idea
+.vscode
 database/submissions.db

@@ -80,7 +80,7 @@ class DescriptionProvider:
         social_network = ['twitter.com', 'facebook.com', 'instagram.com']
         link_type = info['type']
         target = info['target']
-        target = target.replace('(', '\(').replace(')', '\)')
+        target = target.replace('(', r'\(').replace(')', r'\)')
 
         if link_type == 'social network':
             for domain in social_network:

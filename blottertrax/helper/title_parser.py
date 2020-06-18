@@ -68,7 +68,6 @@ class TitleParser:
                 # removes all before feat_index and strips, feature_artist = "c) - -- - d [e/f](g)"
                 feature_artist = post_title[feat_index:].strip()
 
-
             break
 
         # find various trailing characters to trim down featuring artist
