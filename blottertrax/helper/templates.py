@@ -1,4 +1,5 @@
 # flake8: noqa
+from praw.models import Submission
 
 submission_exceeding_threshold: str = '''
 Our apologies /u/{} but your post has been automatically removed because the artist has too many {}. The maximum is {:,} and this link has {:,}.
@@ -47,3 +48,19 @@ ___
 
 If you have any questions or believe that there has been an error, you may [PM the moderators](http://www.reddit.com/message/compose?to=/r/listentothis&subject=Please review my post). You may also [click here to see our full rule set](https://www.reddit.com/r/listentothis/wiki/rules).
 '''
+
+modmail_reply: str = '''
+/u/{},
+
+If you are contacting us about your [recent submission]({}), it was likely removed to your account being too new to participate in our community.  Please continue to participate elsewhere on reddit and then come back to submit some music.
+
+Please note that we do not give out details of how active your account must be to participate here as it would make circumvention too easy.
+
+Furthermore, please carefully review [our rules](https://www.reddit.com/r/listentothis/wiki/rules) when you return.
+
+^^This message was sent by an automated bot.  If you believe this message does not resolve your issue please feel free to reply.
+'''
+
+
+def get_modmail_reply_new_account(username: str, recent_submission: Submission):
+    return modmail_reply.format(username, recent_submission.permalink)

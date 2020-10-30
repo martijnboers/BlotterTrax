@@ -29,6 +29,8 @@ class Config:
             self.USER_NAME = config.get('REDDIT', 'USER_NAME')
             self.SUBREDDIT = config.get('REDDIT', 'SUBREDDIT')
             self.REMOVE_SUBMISSIONS = config.getboolean('REDDIT', 'REMOVE_SUBMISSIONS')
+            self.MINIMUM_ACCOUNT_AGE = config.getint('REDDIT', 'MINIMUM_ACCOUNT_AGE')
+            self.MINIMUM_COMMENT_KARMA = config.getint('REDDIT', 'MINIMUM_COMMENT_KARMA')
 
             self.YT_KEY = config.get('YOUTUBE', 'KEY')
 

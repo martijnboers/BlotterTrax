@@ -1,7 +1,9 @@
+import datetime
 import sys
 import time
 import traceback
 
+import prawcore
 from praw import Reddit
 
 from blottertrax.config import Config
@@ -26,7 +28,7 @@ class BlotterTrax:
     database: Database = None
     description_provider: DescriptionProvider = None
     crash_timeout: int = 10
-    threshold_services: list = None
+    threshold_services: list = []
 
     def __init__(self):
         try:
@@ -44,28 +46,71 @@ class BlotterTrax:
             exit('Check if the configuration is set right')
 
     def _run(self):
-        for submission in self._get_submissions():
-            parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
+        while True:
+            for submission in self._get_submissions():
+                """ No submissions, drop into parsing Modmail for a bit """
+                if submission is None:
+                    break
 
-            if ExcludedArtists.is_excluded(parsed_submission):
-                continue
+                parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
 
-            if SelfPromoDetector.is_self_promo(parsed_submission, submission):
-                reply = templates.self_promotion.format(submission.author.name)
-                submission.mod.remove(False, mod_note="Self promotion")
-                self._reply_with_sticky_post(submission, reply)
-                continue
+                if ExcludedArtists.is_excluded(parsed_submission):
+                    continue
 
-            exceeds_threshold = self._do_service_checks(parsed_submission, submission)
+                if SelfPromoDetector.is_self_promo(parsed_submission, submission):
+                    reply = templates.self_promotion.format(submission.author.name)
+                    submission.mod.remove(False, mod_note="Self promotion")
+                    self._reply_with_sticky_post(submission, reply)
+                    continue
 
-            try:
-                if exceeds_threshold is False and parsed_submission.success is True:
-                    # Yeey this post probably isn't breaking the rules 🌈
-                    self._reply_with_sticky_post(submission, self.description_provider.get_reply(parsed_submission))
-            except DescriptionException:
-                # Can't find recording on Musicbrainz, skipping
-                # traceback.print_exc(file=sys.stdout)
-                pass
+                exceeds_threshold = self._do_service_checks(parsed_submission, submission)
+
+                try:
+                    if exceeds_threshold is False and parsed_submission.success is True:
+                        # Yeey this post probably isn't breaking the rules 🌈
+                        self._reply_with_sticky_post(submission, self.description_provider.get_reply(parsed_submission))
+                except DescriptionException:
+                    # Can't find recording on Musicbrainz, skipping
+                    # traceback.print_exc(file=sys.stdout)
+                    pass
+
+            for message in self.reddit.subreddit(self.config.SUBREDDIT).mod.stream.modmail_conversations(
+                    state="new", pause_after=-1):
+                """ No messages, drop back to submissions for awhile """
+                if message is None:
+                    break
+
+                if self.database.known_mod_mail(message) is True:
+                    continue
+
+                try:
+                    current_time_utc = datetime.datetime.utcnow()
+                    print(f"To: {message.user}, Id: {message.id}")
+
+                    """ 
+                    Ensure no other mod has already replied to this message.
+                    We don't want to step on active conversations.
+                    Check the user has a recent submission.  
+                    If not, they might not be contacting about a post.
+                    """
+                    if message.last_mod_update is None and len(message.user.recent_posts) > 0:
+                        account_creation_time = datetime.datetime.fromtimestamp(round(message.user.created_utc))
+                        account_age = current_time_utc - account_creation_time
+
+                        hours_since_creation = account_age.days * 24
+
+                        if hours_since_creation < self.config.MINIMUM_ACCOUNT_AGE / 3600 \
+                                or message.user.comment_karma < self.config.MINIMUM_COMMENT_KARMA:
+                            """ Users account is too new, notify them. """
+                            message.reply(templates.get_modmail_reply_new_account(message.user.name, message.user.recent_posts[0]), author_hidden=True)
+                except prawcore.exceptions.NotFound:
+                    """ User is likely shadowbanned. """
+                except AttributeError:
+                    """ Likely that the users account has been deleted. """
+                finally:
+                    message.read()
+                    message.archive()
+                    self.database.save_mod_mail(message)
 
     def _do_service_checks(self, parsed_submission, submission) -> bool:
         """
@@ -105,11 +150,14 @@ class BlotterTrax:
         return exceeds_threshold
 
     def _get_submissions(self):
-        for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
-            print(submission.title + " - http://reddit.com" + submission.permalink)
+        for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions(pause_after=-1):
+            if submission is None:
+                return None
 
             if self.database.known_submission(submission) is True:
                 continue
+
+            print(submission.title + " - http://reddit.com" + submission.permalink)
 
             # Always save submissions, in case of errors log it and continue
             self.database.save_submission(submission)

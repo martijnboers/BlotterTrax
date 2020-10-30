@@ -11,10 +11,11 @@ class Database:
     sql = None
 
     def __init__(self):
-        self.sql = sqlite3.connect('{}/../database/submissions.db'.format(os.path.dirname(os.path.realpath(__file__))))
+        self.sql = sqlite3.connect('{}/../database/database.db'.format(os.path.dirname(os.path.realpath(__file__))))
         self.cursor = self.sql.cursor()
 
         self.cursor.execute('CREATE TABLE IF NOT EXISTS submissions(id TEXT)')
+        self.cursor.execute('CREATE TABLE IF NOT EXISTS modmail(id TEXT)')
         self.cursor.execute('CREATE INDEX IF NOT EXISTS postindex on submissions(id)')
         self.cursor.execute(
             '''
@@ -47,4 +48,12 @@ class Database:
     def known_submission(self, submission: Submission) -> bool:
         self.cursor.execute('SELECT id FROM submissions WHERE id == ?', [submission.id])
 
+        return self.cursor.fetchone() is not None
+
+    def save_mod_mail(self, mail):
+        self.cursor.execute('INSERT INTO modmail VALUES(?)', [mail.id])
+        self.sql.commit()
+
+    def known_mod_mail(self, mail) -> bool:
+        self.cursor.execute('select id from modmail where id == ?', [mail.id])
         return self.cursor.fetchone() is not None
