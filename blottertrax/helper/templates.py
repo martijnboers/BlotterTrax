@@ -52,9 +52,7 @@ If you have any questions or believe that there has been an error, you may [PM t
 modmail_reply: str = '''
 /u/{},
 
-If you are contacting us about your [recent submission]({}), it was likely removed to your account being too new to participate in our community.  Please continue to participate elsewhere on reddit and then come back to submit some music.
-
-Please note that we do not give out details of how active your account must be to participate here as it would make circumvention too easy.
+If you are contacting us about your [recent submission]({}), it was likely removed due to your account being too new to participate in our community.  Please continue to participate by leaving comments on r/listentothis and elsewhere on reddit and then come back to submit some music. As policy, we don't disclose the specific karma minimum for submitting.
 
 Furthermore, please carefully review [our rules](https://www.reddit.com/r/listentothis/wiki/rules) when you return.
 
