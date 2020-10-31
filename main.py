@@ -46,33 +46,17 @@ class BlotterTrax:
             exit('Check if the configuration is set right')
 
     def _run(self):
+        """
+        This infinite loop lets us swap between streaming submissions and streaming modmail.
+        See: https://www.reddit.com/r/redditdev/comments/7vj6ox/can_i_do_other_things_with_praw_while_reading/dtszfzb/
+        """
         while True:
             for submission in self._get_submissions():
                 """ No submissions, drop into parsing Modmail for a bit """
                 if submission is None:
                     break
 
-                parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
-
-                if ExcludedArtists.is_excluded(parsed_submission):
-                    continue
-
-                if SelfPromoDetector.is_self_promo(parsed_submission, submission):
-                    reply = templates.self_promotion.format(submission.author.name)
-                    submission.mod.remove(False, mod_note="Self promotion")
-                    self._reply_with_sticky_post(submission, reply)
-                    continue
-
-                exceeds_threshold = self._do_service_checks(parsed_submission, submission)
-
-                try:
-                    if exceeds_threshold is False and parsed_submission.success is True:
-                        # Yeey this post probably isn't breaking the rules 🌈
-                        self._reply_with_sticky_post(submission, self.description_provider.get_reply(parsed_submission))
-                except DescriptionException:
-                    # Can't find recording on Musicbrainz, skipping
-                    # traceback.print_exc(file=sys.stdout)
-                    pass
+                self._process_submission(submission)
 
             for message in self.reddit.subreddit(self.config.SUBREDDIT).mod.stream.modmail_conversations(
                     state="new", pause_after=-1):
@@ -80,37 +64,68 @@ class BlotterTrax:
                 if message is None:
                     break
 
-                if self.database.known_mod_mail(message) is True:
-                    continue
+                self._process_modmail_message(message)
 
-                try:
-                    current_time_utc = datetime.datetime.utcnow()
-                    print(f"To: {message.user}, Id: {message.id}")
+    def _process_submission(self, submission) -> None:
+        parsed_submission = TitleParser.create_parsed_submission_from_submission(submission)
 
-                    """ 
-                    Ensure no other mod has already replied to this message.
-                    We don't want to step on active conversations.
-                    Check the user has a recent submission.  
-                    If not, they might not be contacting about a post.
-                    """
-                    if message.last_mod_update is None and len(message.user.recent_posts) > 0:
-                        account_creation_time = datetime.datetime.fromtimestamp(round(message.user.created_utc))
-                        account_age = current_time_utc - account_creation_time
+        if ExcludedArtists.is_excluded(parsed_submission):
+            return
 
-                        hours_since_creation = account_age.days * 24
+        if SelfPromoDetector.is_self_promo(parsed_submission, submission):
+            reply = templates.self_promotion.format(submission.author.name)
+            submission.mod.remove(False, mod_note="Self promotion")
+            self._reply_with_sticky_post(submission, reply)
+            return
 
-                        if hours_since_creation < self.config.MINIMUM_ACCOUNT_AGE / 3600 \
-                                or message.user.comment_karma < self.config.MINIMUM_COMMENT_KARMA:
-                            """ Users account is too new, notify them. """
-                            message.reply(templates.get_modmail_reply_new_account(message.user.name, message.user.recent_posts[0]), author_hidden=True)
-                except prawcore.exceptions.NotFound:
-                    """ User is likely shadowbanned. """
-                except AttributeError:
-                    """ Likely that the users account has been deleted. """
-                finally:
-                    message.read()
-                    message.archive()
-                    self.database.save_mod_mail(message)
+        exceeds_threshold = self._do_service_checks(parsed_submission, submission)
+
+        try:
+            if exceeds_threshold is False and parsed_submission.success is True:
+                # Yeey this post probably isn't breaking the rules 🌈
+                self._reply_with_sticky_post(submission, self.description_provider.get_reply(parsed_submission))
+        except DescriptionException:
+            # Can't find recording on Musicbrainz, skipping
+            # traceback.print_exc(file=sys.stdout)
+            pass
+
+    def _process_modmail_message(self, message) -> None:
+
+        if self.database.known_mod_mail(message) is True:
+            return
+
+        try:
+            current_time_utc = datetime.datetime.utcnow()
+            print(f"To: {message.user}, Id: {message.id}")
+
+            """
+            Ensure no other mod has already replied to this message.
+            We don't want to step on active conversations.
+            Check the user has a recent submission.
+            If not, they might not be contacting about a post.
+            """
+            if message.last_mod_update is None and len(message.user.recent_posts) > 0:
+                account_creation_time = datetime.datetime.fromtimestamp(round(message.user.created_utc))
+                account_age = current_time_utc - account_creation_time
+
+                hours_since_creation = account_age.days * 24
+
+                if hours_since_creation < self.config.MINIMUM_ACCOUNT_AGE / 3600 \
+                        or message.user.comment_karma < self.config.MINIMUM_COMMENT_KARMA:
+                    """ Users account is too new, notify them. """
+                    message.reply(templates.get_modmail_reply_new_account(
+                        message.user.name,
+                        message.user.recent_posts[0]),
+                        author_hidden=True
+                    )
+        except prawcore.exceptions.NotFound:
+            """ User is likely shadowbanned. """
+        except AttributeError:
+            """ Likely that the users account has been deleted. """
+        finally:
+            message.read()
+            message.archive()
+            self.database.save_mod_mail(message)
 
     def _do_service_checks(self, parsed_submission, submission) -> bool:
         """
