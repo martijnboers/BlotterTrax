@@ -1,6 +1,5 @@
 import configparser
 import os
-from abc import abstractmethod
 
 
 class _ConfigBase:
