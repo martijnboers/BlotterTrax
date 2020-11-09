@@ -3,20 +3,7 @@ import os
 
 
 class Config:
-    CLIENT_ID: str = ''
-    CLIENT_SECRET: str = ''
-    PASSWORD: str = ''
-    USER_NAME: str = ''
-    YT_KEY: str = ''
-    LASTFM_KEY: str = ''
-    LASTFM_SECRET: str = ''
-    LASTFM_USERNAME: str = ''
-    LASTFM_PASSWORD: str = ''
-    SUBREDDIT: str = ''
     REMOVE_SUBMISSIONS: bool = False
-    SOUNDCLOUD_KEY: str = ''
-    MUSICBRAINZ_USER: str = ''
-    MUSICBRAINZ_PASSWORD: str = ''
 
     def __init__(self):
         config = configparser.ConfigParser(strict=False, interpolation=None)
@@ -31,6 +18,7 @@ class Config:
             self.REMOVE_SUBMISSIONS = config.getboolean('REDDIT', 'REMOVE_SUBMISSIONS')
             self.MINIMUM_ACCOUNT_AGE = config.getint('REDDIT', 'MINIMUM_ACCOUNT_AGE')
             self.MINIMUM_COMMENT_KARMA = config.getint('REDDIT', 'MINIMUM_COMMENT_KARMA')
+            self.USER_AGENT = config.get('REDDIT', 'USER_AGENT')
 
             self.YT_KEY = config.get('YOUTUBE', 'KEY')
 
