@@ -1,15 +1,15 @@
-import multiprocessing
+from multiprocessing import Process, Lock
+
 
 from blottertrax.daemons.modmail_daemon import ModMailDaemon
 from blottertrax.daemons.submissions_daemon import SubmissionDaemon
 
 
 def daemon():
-    mod_mail = multiprocessing.Process(target=ModMailDaemon().start)
-    mod_mail.start()
+    lock = Lock()
+    Process(target=ModMailDaemon().start, args=(lock,)).start()
 
-    submissions = multiprocessing.Process(target=SubmissionDaemon().start)
-    submissions.start()
+    Process(target=SubmissionDaemon().start, args=(lock,)).start()
 
 
 if __name__ == '__main__':

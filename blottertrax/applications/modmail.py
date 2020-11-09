@@ -1,4 +1,5 @@
 import datetime
+from multiprocessing import Lock
 
 import prawcore
 from praw import Reddit
@@ -13,9 +14,9 @@ class ModMail:
     database: Database = None
     reddit: Reddit = None
 
-    def __init__(self):
+    def __init__(self, lock: Lock):
         self.config = Config()
-        self.database = Database()
+        self.database = Database(lock)
 
         try:
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,

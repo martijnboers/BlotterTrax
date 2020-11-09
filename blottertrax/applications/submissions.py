@@ -1,5 +1,6 @@
 import sys
 import traceback
+from multiprocessing import Lock
 
 from praw import Reddit
 
@@ -25,11 +26,11 @@ class Submissions:
     description_provider: DescriptionProvider = None
     threshold_services: list = []
 
-    def __init__(self):
+    def __init__(self, lock: Lock):
         try:
             self.config = Config()
             self.last_fm = LastFM()
-            self.database = Database()
+            self.database = Database(lock)
             self.description_provider = DescriptionProvider()
             self.threshold_services = [Youtube(), Soundcloud(), self.last_fm]
 
