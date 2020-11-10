@@ -55,11 +55,11 @@ class ModMail:
                             message.user.recent_posts[0]),
                             author_hidden=True
                         )
+                        message.read()
+                        message.archive()
             except prawcore.exceptions.NotFound:
                 """ User is likely shadowbanned. """
             except AttributeError:
                 """ Likely that the users account has been deleted. """
             finally:
-                message.read()
-                message.archive()
                 self.database.save_mod_mail(message)
