@@ -11,12 +11,9 @@ from blottertrax.helper import templates
 
 
 class ModMail:
-    config: Config = None
-    database: Database = None
-    reddit: Reddit = None
-
     def __init__(self, lock: Lock):
         self.config = Config()
+        self.logger = Logger()
         self.database = Database(lock)
 
         try:

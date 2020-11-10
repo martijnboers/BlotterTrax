@@ -19,11 +19,6 @@ from blottertrax.services.youtube import Youtube
 
 
 class Submissions:
-    reddit: Reddit = None
-    config: Config = None
-    last_fm: LastFM = None
-    database: Database = None
-    description_provider: DescriptionProvider = None
     threshold_services: list = []
 
     def __init__(self, lock: Lock):
