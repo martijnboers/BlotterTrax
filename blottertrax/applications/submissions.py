@@ -39,6 +39,9 @@ class Submissions:
                                  username=self.config.USER_NAME)
 
         except KeyError:
+            sys.stderr.write('Check if the configuration is set right')
+            sys.stderr.flush()
+
             exit('Check if the configuration is set right')
 
     def run(self):
