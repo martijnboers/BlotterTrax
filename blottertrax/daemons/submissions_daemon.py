@@ -1,22 +1,24 @@
-import sys
 import time
-import traceback
 from multiprocessing import Lock
 
 from blottertrax.applications.submissions import Submissions
+from blottertrax.logger import Logger
 
 
 class SubmissionDaemon:
     crash_timeout: int = 10
 
+    def __init__(self):
+        self.logger = Logger()
+
     def start(self, lock: Lock):
-        print('Starting submissions daemon')
-
         try:
-            Submissions(lock).run()
+            self.logger.info('Starting SubmissionDaemon')
 
+            Submissions(lock).run()
         except Exception:
-            traceback.print_exc(file=sys.stdout)
+            self.logger.exception('SubmissionDaemon threw exception')
+
             time.sleep(self.crash_timeout)
 
         self.start(lock)

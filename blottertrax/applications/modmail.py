@@ -8,6 +8,7 @@ from praw import Reddit
 from blottertrax.config import Config
 from blottertrax.database import Database
 from blottertrax.helper import templates
+from blottertrax.logger import Logger
 
 
 class ModMail:
@@ -22,49 +23,44 @@ class ModMail:
                                  username=self.config.USER_NAME)
 
         except KeyError:
-            sys.stderr.write('Check if the configuration is set right')
-            sys.stderr.flush()
-
-            exit('Check if the configuration is set right')
+            self.logger.exception('Check if the configuration is set right')
+            exit()
 
     def run(self):
         for message in self.reddit.subreddit(self.config.SUBREDDIT).mod.stream.modmail_conversations(state="new"):
-            self._process_modmail_message(message)
+            if self.database.known_mod_mail(message) is True:
+                return
 
-    def _process_modmail_message(self, message) -> None:
+            try:
+                current_time_utc = datetime.datetime.utcnow()
+                self.logger.info(f"Handling message {message.id}")
 
-        if self.database.known_mod_mail(message) is True:
-            return
+                """
+                Ensure no other mod has already replied to this message.
+                We don't want to step on active conversations.
+                Check the user has a recent submission.
+                If not, they might not be contacting about a post.
+                """
+                if message.last_mod_update is None and len(message.user.recent_posts) > 0:
+                    account_creation_time = datetime.datetime.fromtimestamp(round(message.user.created_utc))
+                    account_age = current_time_utc - account_creation_time
 
-        try:
-            current_time_utc = datetime.datetime.utcnow()
-            print(f"To: {message.user}, Id: {message.id}")
+                    hours_since_creation = account_age.days * 24
 
-            """
-            Ensure no other mod has already replied to this message.
-            We don't want to step on active conversations.
-            Check the user has a recent submission.
-            If not, they might not be contacting about a post.
-            """
-            if message.last_mod_update is None and len(message.user.recent_posts) > 0:
-                account_creation_time = datetime.datetime.fromtimestamp(round(message.user.created_utc))
-                account_age = current_time_utc - account_creation_time
-
-                hours_since_creation = account_age.days * 24
-
-                if hours_since_creation < self.config.MINIMUM_ACCOUNT_AGE / 3600 \
-                        or message.user.comment_karma < self.config.MINIMUM_COMMENT_KARMA:
-                    """ Users account is too new, notify them. """
-                    message.reply(templates.get_modmail_reply_new_account(
-                        message.user.name,
-                        message.user.recent_posts[0]),
-                        author_hidden=True
-                    )
-        except prawcore.exceptions.NotFound:
-            """ User is likely shadowbanned. """
-        except AttributeError:
-            """ Likely that the users account has been deleted. """
-        finally:
-            message.read()
-            message.archive()
-            self.database.save_mod_mail(message)
+                    if hours_since_creation < self.config.MINIMUM_ACCOUNT_AGE / 3600 \
+                            or message.user.comment_karma < self.config.MINIMUM_COMMENT_KARMA:
+                        self.logger.info(f"Notifying  {message.user}, that their account is too new")
+                        """ Users account is too new, notify them. """
+                        message.reply(templates.get_modmail_reply_new_account(
+                            message.user.name,
+                            message.user.recent_posts[0]),
+                            author_hidden=True
+                        )
+            except prawcore.exceptions.NotFound:
+                """ User is likely shadowbanned. """
+            except AttributeError:
+                """ Likely that the users account has been deleted. """
+            finally:
+                message.read()
+                message.archive()
+                self.database.save_mod_mail(message)
