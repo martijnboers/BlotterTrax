@@ -34,6 +34,21 @@ And that's it! If it doesn't work you can create an issue
 ## How to use?  
 Please set the `SUBREDDIT` in `conf/config.ini` to select the desired subreddit to moderate. This only works when the Reddit account is moderator of the selected subreddit
 
+## Development
+As this bot is running 2 applications, handling new submissions and modmail it's run with multiprocessing. 
+To debug, in `main.py` change the code for the application you want to debug. For example only testing mod mail:
+
+```
+lock = Lock()
+
+# Process(target=ModMailDaemon().start, args=(lock,)).start()
+
+# Process(target=SubmissionDaemon().start, args=(lock,)).start()
+
+ModMailDaemon().start(lock)
+```
+ 
+
 ## Features
 - [x] Using Youtube, Last.fm and Soundcloud for detecting submissions with exceeding listen count
 - [x] Report self-promotion posts using username and submission title
