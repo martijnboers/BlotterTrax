@@ -22,7 +22,7 @@ class Youtube(ThresholdService):
         api_version = "v3"
 
         self.youtubeClient = googleapiclient.discovery.build(
-            api_service_name, api_version, developerKey=self.config.YT_KEY)
+            api_service_name, api_version, developerKey=self.config.YT_KEY, cache_discovery=False)
 
     def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         """

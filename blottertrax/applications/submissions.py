@@ -1,4 +1,3 @@
-import sys
 import traceback
 from multiprocessing import Lock
 
@@ -12,6 +11,7 @@ from blottertrax.helper import templates
 from blottertrax.helper.excluded_artists import ExcludedArtists
 from blottertrax.helper.self_promo_detector import SelfPromoDetector
 from blottertrax.helper.title_parser import TitleParser
+from blottertrax.logger import Logger
 from blottertrax.services.lastfm import LastFM
 from blottertrax.services.overall_threshold_service import OverallThresholdService
 from blottertrax.services.soundcloud import Soundcloud
@@ -19,17 +19,13 @@ from blottertrax.services.youtube import Youtube
 
 
 class Submissions:
-    reddit: Reddit = None
-    config: Config = None
-    last_fm: LastFM = None
-    database: Database = None
-    description_provider: DescriptionProvider = None
     threshold_services: list = []
 
     def __init__(self, lock: Lock):
         try:
             self.config = Config()
             self.last_fm = LastFM()
+            self.logger = Logger()
             self.database = Database(lock)
             self.description_provider = DescriptionProvider()
             self.threshold_services = [Youtube(), Soundcloud(), self.last_fm]
@@ -39,10 +35,8 @@ class Submissions:
                                  username=self.config.USER_NAME)
 
         except KeyError:
-            sys.stderr.write('Check if the configuration is set right')
-            sys.stderr.flush()
-
-            exit('Check if the configuration is set right')
+            self.logger.exception('Check if the configuration is set right')
+            exit()
 
     def run(self):
         for submission in self._get_submissions():
@@ -65,7 +59,7 @@ class Submissions:
                     self._reply_with_sticky_post(submission, self.description_provider.get_reply(parsed_submission))
             except DescriptionException:
                 # Can't find recording on Musicbrainz, skipping
-                # traceback.print_exc(file=sys.stdout)
+                self.logger.error(f"Can't find musicbrainz info for {submission.permalink}")
                 pass
 
     def _do_service_checks(self, parsed_submission, submission) -> bool:
@@ -93,7 +87,7 @@ class Submissions:
 
             except Exception:
                 # Go ahead and continue execution, don't want to fail completely just because one service failed.
-                traceback.print_exc(file=sys.stdout)
+                self.logger.exception(f"Getting {service.service_name} failed")
                 self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
 
         # TODO: Enable this when new rules roll out.
@@ -113,7 +107,7 @@ class Submissions:
             if self.database.known_submission(submission) is True:
                 continue
 
-            print(submission.title + " - http://reddit.com" + submission.permalink)
+            self.logger.info(f"Handling {submission.title} - http://reddit.com{submission.permalink}")
 
             # Always save submissions, in case of errors log it and continue
             self.database.save_submission(submission)

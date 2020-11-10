@@ -7,8 +7,8 @@ from blottertrax.daemons.submissions_daemon import SubmissionDaemon
 
 def daemon():
     lock = Lock()
-    Process(target=ModMailDaemon().start, args=(lock,)).start()
 
+    Process(target=ModMailDaemon().start, args=(lock,)).start()
     Process(target=SubmissionDaemon().start, args=(lock,)).start()
 
 
