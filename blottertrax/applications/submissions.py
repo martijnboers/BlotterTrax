@@ -87,7 +87,7 @@ class Submissions:
 
             except Exception:
                 # Go ahead and continue execution, don't want to fail completely just because one service failed.
-                self.logger.exception(f"Getting {service.service_name} failed")
+                self.logger.exception(f"Getting {type(service).__name__} failed")
                 self.database.log_error_causing_submission(parsed_submission, submission, traceback.format_exc())
 
         # TODO: Enable this when new rules roll out.
