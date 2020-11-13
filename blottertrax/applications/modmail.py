@@ -28,7 +28,7 @@ class ModMail:
     def run(self):
         for message in self.reddit.subreddit(self.config.SUBREDDIT).mod.stream.modmail_conversations(state="new"):
             if self.database.known_mod_mail(message) is True:
-                return
+                continue
 
             try:
                 current_time_utc = datetime.datetime.utcnow()
