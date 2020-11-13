@@ -56,7 +56,7 @@ If you are contacting us about your [recent submission]({}), it was likely remov
 
 Furthermore, please carefully review [our rules](https://www.reddit.com/r/listentothis/wiki/rules) when you return.
 
-^^This message was sent by an automated bot.  If you believe this message does not resolve your issue please feel free to reply.
+^This ^message ^was ^sent ^by ^an ^automated ^bot.  ^If ^you ^believe ^this ^message ^does ^not ^resolve ^your ^issue ^please ^feel ^free ^to ^reply.
 '''
 
 
