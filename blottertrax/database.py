@@ -8,10 +8,6 @@ from blottertrax.value_objects.parsed_submission import ParsedSubmission
 
 
 class Database:
-    cursor = None
-    sql = None
-    lock: Lock = None
-
     def __init__(self, lock: Lock):
         self.lock = lock
 

@@ -14,19 +14,19 @@ class Soundcloud(ThresholdService):
     def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         url = parsed_submission.get_final_url()
         if 'soundcloud.com' not in url:
-            return ThresholdServiceResult(False, 0, 0, '')
+            return ThresholdServiceResult.error()
 
         response = requests.get(
             'https://api.soundcloud.com/resolve.json?url=' + url + '&client_id=' + self.config.SOUNDCLOUD_KEY
         )
 
         if response.status_code != 200:
-            return ThresholdServiceResult(False, 0, 0, '')
+            return ThresholdServiceResult.error()
 
         data = response.json()
 
         if ArrayUtil.safe_list_get(data, False, 'playback_count') is False:
-            return ThresholdServiceResult(False, 0, 0, '')
+            return ThresholdServiceResult.error()
 
         return ThresholdServiceResult(data['playback_count'] > self.Threshold, data['playback_count'], self.Threshold,
                                       'Soundcloud plays')

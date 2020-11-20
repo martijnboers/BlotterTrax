@@ -9,3 +9,7 @@ class ThresholdServiceResult:
         self.listeners_count = listeners_count
         self.threshold = threshold
         self.service_name = service_name
+
+    @staticmethod
+    def error():
+        return ThresholdServiceResult(False, 0, 0, '')
