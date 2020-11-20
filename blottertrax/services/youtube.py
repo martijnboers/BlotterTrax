@@ -14,7 +14,7 @@ from blottertrax.value_objects.service_result import ThresholdServiceResult
 class Youtube(ThresholdService):
     config: Config = Config()
     youtubeClient = None
-    threshold = 1_000_000
+    threshold = config.YOUTUBE.THRESHOLD
     youtubeUrls: List[str] = ['youtube.com', 'youtube.be', 'www.youtube.com', 'youtu.be']
 
     def __init__(self):
@@ -22,7 +22,7 @@ class Youtube(ThresholdService):
         api_version = "v3"
 
         self.youtubeClient = googleapiclient.discovery.build(
-            api_service_name, api_version, developerKey=self.config.YT_KEY, cache_discovery=False)
+            api_service_name, api_version, developerKey=self.config.YOUTUBE.KEY, cache_discovery=False)
 
     def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         """
