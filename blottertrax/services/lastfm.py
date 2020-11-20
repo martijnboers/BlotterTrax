@@ -8,7 +8,6 @@ from blottertrax.value_objects.service_result import ThresholdServiceResult
 
 
 class LastFM(ThresholdService):
-    network = None
     config: Config = Config()
     threshold_scrobbles = 4_000_000
     threshold_listeners = 500_000

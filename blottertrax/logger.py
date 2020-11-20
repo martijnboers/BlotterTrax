@@ -2,8 +2,6 @@ import logging
 
 
 class Logger:
-    logger = None
-
     def __init__(self):
         # create logger with 'spam_application'
         self.logger = logging.getLogger('blotter-trax')

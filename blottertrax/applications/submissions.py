@@ -24,11 +24,10 @@ class Submissions:
     def __init__(self, lock: Lock):
         try:
             self.config = Config()
-            self.last_fm = LastFM()
             self.logger = Logger()
             self.database = Database(lock)
             self.description_provider = DescriptionProvider()
-            self.threshold_services = [Youtube(), Soundcloud(), self.last_fm]
+            self.threshold_services = [Youtube(), Soundcloud(), LastFM()]
 
             self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
                                  password=self.config.PASSWORD, user_agent=self.config.USER_AGENT,

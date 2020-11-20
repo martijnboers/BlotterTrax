@@ -31,7 +31,7 @@ class Youtube(ThresholdService):
         final_url = urlparse(parsed_submission.get_final_url())
 
         if final_url.netloc not in self.youtubeUrls:
-            return ThresholdServiceResult(False, 0, 0, '')
+            return ThresholdServiceResult.error()
 
         query = parse.parse_qs(parse.urlsplit(final_url.geturl()).query)
 

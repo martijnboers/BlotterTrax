@@ -2,13 +2,6 @@ import requests
 
 
 class ParsedSubmission:
-    artist: str
-    featuring_artist: str
-    track_title: str
-    url: str
-    success: bool
-    final_url: str = ''
-
     def __init__(self, success: bool, url: str, artist: str = '', featuring_artist: str = '', track_title: str = ''):
         self.success = success
         self.artist = artist
