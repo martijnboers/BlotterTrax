@@ -8,6 +8,7 @@ class ParsedSubmission:
         self.featuring_artist = featuring_artist
         self.track_title = track_title
         self.url = url
+        self.final_url = ''
 
     def get_final_url(self):
         # we already did the work once, just return the result
