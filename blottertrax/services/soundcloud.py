@@ -9,7 +9,7 @@ from blottertrax.value_objects.service_result import ThresholdServiceResult
 
 class Soundcloud(ThresholdService):
     config: Config = Config()
-    Threshold = 1_000_000
+    Threshold = config.SOUNDCLOUD.THRESHOLD
 
     def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         url = parsed_submission.get_final_url()
@@ -17,7 +17,7 @@ class Soundcloud(ThresholdService):
             return ThresholdServiceResult.error()
 
         response = requests.get(
-            'https://api.soundcloud.com/resolve.json?url=' + url + '&client_id=' + self.config.SOUNDCLOUD_KEY
+            'https://api.soundcloud.com/resolve.json?url=' + url + '&client_id=' + self.config.SOUNDCLOUD.KEY
         )
 
         if response.status_code != 200:

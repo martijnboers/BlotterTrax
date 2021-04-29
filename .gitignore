@@ -4,5 +4,5 @@ conf/config.ini
 __pycache__
 .idea
 .vscode
-database/database.db
+database/*.db
 debug.log

@@ -9,13 +9,13 @@ from blottertrax.value_objects.service_result import ThresholdServiceResult
 
 class LastFM(ThresholdService):
     config: Config = Config()
-    threshold_scrobbles = 4_000_000
-    threshold_listeners = 500_000
+    threshold_scrobbles = config.LASTFM.SCROBBLE_THRESHOLD
+    threshold_listeners = config.LASTFM.LISTENER_THRESHOLD
 
     def __init__(self):
-        self.network = pylast.LastFMNetwork(api_key=self.config.LASTFM_KEY, api_secret=self.config.LASTFM_SECRET,
-                                            username=self.config.LASTFM_USERNAME,
-                                            password_hash=pylast.md5(self.config.LASTFM_PASSWORD))
+        self.network = pylast.LastFMNetwork(api_key=self.config.LASTFM.KEY, api_secret=self.config.LASTFM.SECRET,
+                                            username=self.config.LASTFM.USERNAME,
+                                            password_hash=pylast.md5(self.config.LASTFM.PASSWORD))
 
     def get_service_result(self, parsed_submission: ParsedSubmission) -> ThresholdServiceResult:
         """

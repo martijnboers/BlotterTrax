@@ -17,16 +17,16 @@ class ModMail:
         self.database = Database(lock)
 
         try:
-            self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
-                                 password=self.config.PASSWORD, user_agent=self.config.USER_AGENT,
-                                 username=self.config.USER_NAME)
+            self.reddit = Reddit(client_id=self.config.REDDIT.CLIENT_ID, client_secret=self.config.REDDIT.CLIENT_SECRET,
+                                 password=self.config.REDDIT.PASSWORD, user_agent=self.config.REDDIT.USER_AGENT,
+                                 username=self.config.REDDIT.USER_NAME)
 
         except KeyError:
             self.logger.exception('Check if the configuration is set right')
             exit()
 
     def run(self):
-        for message in self.reddit.subreddit(self.config.SUBREDDIT).mod.stream.modmail_conversations(state="new"):
+        for message in self.reddit.subreddit(self.config.REDDIT.SUBREDDIT).mod.stream.modmail_conversations(state="new"):
             if self.database.known_mod_mail(message) is True:
                 continue
 
@@ -46,8 +46,8 @@ class ModMail:
 
                     hours_since_creation = account_age.days * 24
 
-                    if hours_since_creation < self.config.MINIMUM_ACCOUNT_AGE / 3600 \
-                            or message.user.comment_karma < self.config.MINIMUM_COMMENT_KARMA:
+                    if hours_since_creation < self.config.REDDIT.MINIMUM_ACCOUNT_AGE / 3600 \
+                            or message.user.comment_karma < self.config.REDDIT.MINIMUM_COMMENT_KARMA:
                         self.logger.info(f"Notifying  {message.user}, that their account is too new")
                         """ Users account is too new, notify them. """
                         message.reply(templates.get_modmail_reply_new_account(
