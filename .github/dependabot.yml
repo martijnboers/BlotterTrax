@@ -1,0 +1,21 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: google-api-python-client
+    versions:
+    - 2.0.2
+    - 2.1.0
+    - 2.2.0
+  - dependency-name: pylast
+    versions:
+    - 4.2.0
+  - dependency-name: praw
+    versions:
+    - 7.1.2
+    - 7.1.4
