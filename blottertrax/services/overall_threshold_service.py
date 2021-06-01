@@ -1,12 +1,14 @@
 from datetime import date
 
+from blottertrax.config import Config
 from blottertrax.value_objects.service_result import ThresholdServiceResult
 
 
 # Be sure to instantiate a new one for every post!
 # TODO: Would we rather keep one around and just have a "reset" function?
 class OverallThresholdService:
-    Threshold = 1_000_000
+    config: Config = Config()
+    Threshold = config.APP.OVERALL_LISTEN_THRESHOLD
     running_count = 0
 
     def get_service_result(self) -> ThresholdServiceResult:

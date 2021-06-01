@@ -16,7 +16,7 @@ class DescriptionProvider:
         config = Config()
 
         self.musicbrainz = musicbrainzngs
-        self.musicbrainz.auth(config.MUSICBRAINZ_USER, config.MUSICBRAINZ_PASSWORD)
+        self.musicbrainz.auth(config.MUSICBRAINZ.USER, config.MUSICBRAINZ.PASSWORD)
         self.musicbrainz.set_useragent("BlotterTrax", "0.1", "https://github.com/martijnboers/BlotterTrax")
 
     def get_reply(self, parsed_submission: ParsedSubmission) -> str:

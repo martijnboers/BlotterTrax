@@ -29,9 +29,9 @@ class Submissions:
             self.description_provider = DescriptionProvider()
             self.threshold_services = [Youtube(), Soundcloud(), LastFM()]
 
-            self.reddit = Reddit(client_id=self.config.CLIENT_ID, client_secret=self.config.CLIENT_SECRET,
-                                 password=self.config.PASSWORD, user_agent=self.config.USER_AGENT,
-                                 username=self.config.USER_NAME)
+            self.reddit = Reddit(client_id=self.config.REDDIT.CLIENT_ID, client_secret=self.config.REDDIT.CLIENT_SECRET,
+                                 password=self.config.REDDIT.PASSWORD, user_agent=self.config.REDDIT.USER_AGENT,
+                                 username=self.config.REDDIT.USER_NAME)
 
         except KeyError:
             self.logger.exception('Check if the configuration is set right')
@@ -99,7 +99,7 @@ class Submissions:
         return exceeds_threshold
 
     def _get_submissions(self):
-        for submission in self.reddit.subreddit(self.config.SUBREDDIT).stream.submissions():
+        for submission in self.reddit.subreddit(self.config.REDDIT.SUBREDDIT).stream.submissions():
             if submission is None:
                 return None
 
@@ -114,7 +114,7 @@ class Submissions:
             yield submission
 
     def _perform_exceeds_threshold_mod_action(self, submission, service):
-        if self.config.REMOVE_SUBMISSIONS is True:
+        if self.config.REDDIT.REMOVE_SUBMISSIONS is True:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
             submission.report(templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
