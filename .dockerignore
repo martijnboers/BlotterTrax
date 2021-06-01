@@ -1,0 +1,5 @@
+venv/
+tests/
+.idea/
+.github/
+conf/
