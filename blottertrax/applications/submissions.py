@@ -114,7 +114,7 @@ class Submissions:
             yield submission
 
     def _perform_exceeds_threshold_mod_action(self, submission, service):
-        if self.config.REDDIT.REMOVE_SUBMISSIONS is True:
+        if self.config.REDDIT.REMOVE_SUBMISSIONS_ON_ERROR is True:
             self._remove_submission_exceeding_threshold(submission, service)
         else:
             submission.report(templates.mod_note_exceeding_threshold.format(service.service_name, service.threshold,
