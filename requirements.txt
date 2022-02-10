@@ -1,4 +1,4 @@
 praw===7.5.0
-google-api-python-client===2.36.0
+google-api-python-client===2.37.0
 pylast===4.5.0
 musicbrainzngs===0.7.1
